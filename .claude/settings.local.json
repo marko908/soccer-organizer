@@ -4,7 +4,10 @@
       "Bash(npm install)",
       "Bash(npm run:*)",
       "Bash(npx prisma db push:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git commit:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

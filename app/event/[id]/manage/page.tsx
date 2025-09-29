@@ -228,11 +228,11 @@ export default function ManageEventPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className={participant.paymentStatus === 'succeeded'
-                      ? (participant.stripePaymentIntentId ? 'status-badge-paid' : 'status-badge-cash')
+                      ? ((participant as any).stripePaymentIntentId ? 'status-badge-paid' : 'status-badge-cash')
                       : 'status-badge-cash'
                     }>
                       {participant.paymentStatus === 'succeeded'
-                        ? (participant.stripePaymentIntentId ? 'Stripe' : 'Cash')
+                        ? ((participant as any).stripePaymentIntentId ? 'Stripe' : 'Cash')
                         : 'Cash'
                       }
                     </span>
