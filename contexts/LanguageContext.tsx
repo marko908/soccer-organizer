@@ -51,10 +51,10 @@ const translations: Record<Language, Record<string, string>> = {
   pl: {
     // Navigation
     'nav.home': 'Strona główna',
-    'nav.dashboard': 'Panel organizatora',
-    'nav.login': 'Zaloguj się',
-    'nav.register': 'Zarejestruj się',
-    'nav.logout': 'Wyloguj się',
+    'nav.dashboard': 'Panel',
+    'nav.login': 'Logowanie',
+    'nav.register': 'Rejestracja',
+    'nav.logout': 'Wyloguj',
 
     // Home page
     'home.title': 'Organizator Meczów Piłkarskich',
@@ -127,9 +127,9 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.registerFailed': 'Rejestracja nieudana. Spróbuj ponownie.',
 
     // Dashboard
-    'dashboard.title': 'Panel Organizatora',
+    'dashboard.title': 'Panel',
     'dashboard.welcome': 'Witaj z powrotem',
-    'dashboard.createEvent': 'Stwórz nowe wydarzenie',
+    'dashboard.createEvent': 'Nowe wydarzenie',
     'dashboard.yourEvents': 'Twoje wydarzenia',
     'dashboard.loadingEvents': 'Ładowanie wydarzeń...',
     'dashboard.noEvents': 'Brak wydarzeń',
@@ -143,17 +143,17 @@ const translations: Record<Language, Record<string, string>> = {
     'dashboard.manage': 'Zarządzaj',
 
     // Create Event
-    'create.title': 'Stwórz nowe wydarzenie piłkarskie',
+    'create.title': 'Nowe wydarzenie',
     'create.eventName': 'Nazwa wydarzenia',
     'create.eventNamePlaceholder': 'np. Piątkowa piłka na Orliku',
     'create.dateTime': 'Data i godzina',
     'create.location': 'Lokalizacja',
     'create.locationPlaceholder': 'np. Orlik Mokotów, ul. Sportowa 1',
     'create.totalCost': 'Całkowity koszt (PLN)',
-    'create.maxPlayers': 'Maksymalna liczba graczy',
+    'create.maxPlayers': 'Max graczy',
     'create.pricePerPlayer': 'Cena za gracza:',
     'create.creating': 'Tworzenie...',
-    'create.createEvent': 'Stwórz wydarzenie',
+    'create.createEvent': 'Stwórz',
     'create.cancel': 'Anuluj',
 
     // Event Page
@@ -198,7 +198,7 @@ const translations: Record<Language, Record<string, string>> = {
     'manage.addParticipantButton': 'Dodaj uczestnika',
     'manage.noParticipants': 'Brak uczestników',
     'manage.remove': 'Usuń',
-    'manage.backToDashboard': 'Powrót do panelu',
+    'manage.backToDashboard': 'Powrót',
     'manage.shareEvent': 'Udostępnij wydarzenie',
     'manage.eventLink': 'Link do wydarzenia:',
     'manage.copyLink': 'Kopiuj link',

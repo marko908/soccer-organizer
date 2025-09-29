@@ -47,7 +47,6 @@ export default function Navigation() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <LanguageSelector />
             {!loading && (
               <>
                 {user ? (
@@ -80,6 +79,7 @@ export default function Navigation() {
                 )}
               </>
             )}
+            <LanguageSelector />
           </div>
         </div>
       </div>
