@@ -1,11 +1,14 @@
 'use client'
 
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import LanguageSelector from './LanguageSelector'
 
 export default function Navigation() {
   const { user, logout, loading } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -24,7 +27,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-4">
             <Link href="/" className="text-2xl font-bold text-gray-900 hover:text-primary-600 transition-colors">
-              ⚽ Soccer Organizer
+              ⚽ {t('home.title')}
             </Link>
 
             {isEventPage && (
@@ -32,45 +35,46 @@ export default function Navigation() {
                 onClick={() => router.back()}
                 className="text-gray-600 hover:text-gray-900 flex items-center"
               >
-                ← Back
+                ← {t('common.back')}
               </button>
             )}
 
             {isCreatePage && (
               <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 flex items-center">
-                ← Back to Dashboard
+                ← {t('manage.backToDashboard')}
               </Link>
             )}
           </div>
 
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
             {!loading && (
               <>
                 {user ? (
                   <>
-                    <span className="text-gray-700">Hello, {user.name}</span>
+                    <span className="text-gray-700">{t('dashboard.welcome')}, {user.name}</span>
                     {!isDashboard && (
                       <Link href="/dashboard" className="btn-secondary text-sm">
-                        Dashboard
+                        {t('nav.dashboard')}
                       </Link>
                     )}
                     <Link href="/create" className="btn-primary text-sm">
-                      Create Event
+                      {t('dashboard.createEvent')}
                     </Link>
                     <button
                       onClick={handleLogout}
                       className="text-gray-600 hover:text-gray-900 text-sm"
                     >
-                      Logout
+                      {t('nav.logout')}
                     </button>
                   </>
                 ) : (
                   <>
                     <Link href="/login" className="text-gray-600 hover:text-gray-900">
-                      Login
+                      {t('nav.login')}
                     </Link>
                     <Link href="/register" className="btn-primary text-sm">
-                      Register
+                      {t('nav.register')}
                     </Link>
                   </>
                 )}

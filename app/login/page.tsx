@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login, user, loading } = useAuth()
+  const { t } = useLanguage()
 
   useEffect(() => {
     if (!loading && user) {
@@ -25,7 +27,7 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-gray-600">{t('auth.loading')}</div>
       </div>
     )
   }
@@ -44,7 +46,7 @@ export default function LoginPage() {
     if (success) {
       router.push('/dashboard')
     } else {
-      setError('Invalid email or password')
+      setError(t('auth.loginFailed'))
     }
 
     setIsSubmitting(false)
@@ -63,12 +65,12 @@ export default function LoginPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Organizer Login
+            {t('auth.login.title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+            {t('auth.noAccount')}{' '}
             <Link href="/register" className="font-medium text-primary-600 hover:text-primary-500">
-              create a new organizer account
+              {t('auth.signUp')}
             </Link>
           </p>
         </div>
@@ -83,7 +85,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -100,7 +102,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -122,13 +124,13 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="btn-primary w-full"
             >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
+              {isSubmitting ? t('auth.loading') : t('auth.loginButton')}
             </button>
           </div>
 
           <div className="text-center">
             <Link href="/" className="text-sm text-primary-600 hover:text-primary-500">
-              ← Back to home
+              ← {t('common.back')}
             </Link>
           </div>
         </form>
