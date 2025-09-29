@@ -27,7 +27,7 @@ export default function CreateEvent() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/events', {
+      const response = await fetch('/api/simple-events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,8 +36,8 @@ export default function CreateEvent() {
       })
 
       if (response.ok) {
-        const event = await response.json()
-        router.push(`/event/${event.id}`)
+        const data = await response.json()
+        router.push(`/event/${data.event.id}`)
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to create event')

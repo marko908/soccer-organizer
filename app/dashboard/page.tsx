@@ -36,7 +36,7 @@ export default function Dashboard() {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('/api/events')
+      const response = await fetch('/api/simple-events')
       if (response.ok) {
         const data = await response.json()
         setEvents(data)
