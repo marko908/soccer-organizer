@@ -53,7 +53,7 @@ export default function ManageEventPage() {
 
   const fetchEvent = async () => {
     try {
-      const response = await fetch(`/api/events/${params.id}`)
+      const response = await fetch(`/api/simple-event/${params.id}`)
       if (response.ok) {
         const eventData = await response.json()
         setEvent(eventData)
@@ -78,7 +78,7 @@ export default function ManageEventPage() {
     setAddingParticipant(true)
 
     try {
-      const response = await fetch(`/api/events/${params.id}/participants`, {
+      const response = await fetch(`/api/simple-participants/${params.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export default function ManageEventPage() {
     }
 
     try {
-      const response = await fetch(`/api/events/${params.id}/participants/${participantId}`, {
+      const response = await fetch(`/api/simple-participants/${params.id}/${participantId}`, {
         method: 'DELETE',
       })
 

@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 export async function GET(request: NextRequest) {
   try {
     // Get user from JWT token
-    const token = request.cookies.get('token')?.value
+    const token = request.cookies.get('auth-token')?.value
 
     if (!token) {
       return NextResponse.json(
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Get user from JWT token
-    const token = request.cookies.get('token')?.value
+    const token = request.cookies.get('auth-token')?.value
 
     if (!token) {
       return NextResponse.json(

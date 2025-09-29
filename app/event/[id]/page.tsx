@@ -45,7 +45,7 @@ export default function EventPage() {
 
   const fetchEvent = async () => {
     try {
-      const response = await fetch(`/api/events/${params.id}`)
+      const response = await fetch(`/api/simple-event/${params.id}`)
       if (response.ok) {
         const eventData = await response.json()
         setEvent(eventData)
@@ -68,7 +68,7 @@ export default function EventPage() {
     setPaymentLoading(true)
 
     try {
-      const response = await fetch('/api/create-checkout', {
+      const response = await fetch('/api/simple-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
