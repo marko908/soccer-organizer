@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/simple-register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
