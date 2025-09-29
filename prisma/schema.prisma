@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organizer {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events    Event[]
+
+  @@map("organizers")
+}
+
+model Event {
+  id            Int           @id @default(autoincrement())
+  name          String
+  date          DateTime
+  location      String
+  totalCost     Float
+  maxPlayers    Int
+  pricePerPlayer Float
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  organizerId   Int
+  organizer     Organizer     @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  participants  Participant[]
+
+  @@map("events")
+}
+
+model Participant {
+  id                    Int     @id @default(autoincrement())
+  name                  String
+  email                 String?
+  paymentStatus         String  @default("pending") // "pending", "succeeded", "failed"
+  stripePaymentIntentId String?
+  createdAt            DateTime @default(now())
+
+  eventId              Int
+  event                Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("participants")
+}
