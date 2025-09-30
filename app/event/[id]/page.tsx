@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Participant {
   id: number
@@ -22,11 +23,13 @@ interface Event {
   paidParticipants: number
   collectedAmount: number
   availableSpots: number
+  organizerId: number
 }
 
 export default function EventPage() {
   const params = useParams()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [paymentLoading, setPaymentLoading] = useState(false)
@@ -113,6 +116,7 @@ export default function EventPage() {
   }
 
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
+  const isOrganizer = user && event && user.id === event.organizerId
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -155,23 +159,25 @@ export default function EventPage() {
 
           <div className="lg:w-80">
             <div className="stat-card space-y-6">
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-semibold text-gray-700">Collection Progress</span>
-                  <span className="text-sm text-gray-600 font-medium">
-                    {formatCurrency(event.collectedAmount)} / {formatCurrency(event.totalCost)}
-                  </span>
+              {isOrganizer && (
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-sm font-semibold text-gray-700">Collection Progress</span>
+                    <span className="text-sm text-gray-600 font-medium">
+                      {formatCurrency(event.collectedAmount)} / {formatCurrency(event.totalCost)}
+                    </span>
+                  </div>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2 text-right">
+                    {progressPercentage.toFixed(1)}% complete
+                  </div>
                 </div>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500 mt-2 text-right">
-                  {progressPercentage.toFixed(1)}% complete
-                </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
