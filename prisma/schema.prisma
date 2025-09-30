@@ -3,21 +3,44 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 model Organizer {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    Int      @id @default(autoincrement())
+  email                 String   @unique
+  password              String
+  name                  String
+  phone                 String?
+  emailVerified         Boolean  @default(false)
+  phoneVerified         Boolean  @default(false)
+  adminApproved         Boolean  @default(false)
+  approvedAt            DateTime?
+  approvedBy            String?  // admin user identifier
+  stripeAccountId       String?
+  stripeOnboardingCompleted Boolean @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  events    Event[]
+  events                Event[]
+  emailVerifications    EmailVerification[]
 
   @@map("organizers")
+}
+
+model EmailVerification {
+  id          Int      @id @default(autoincrement())
+  token       String   @unique
+  email       String
+  organizerId Int?
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  organizer   Organizer? @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+
+  @@map("email_verifications")
 }
 
 model Event {

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, name } = body
+    const { email, password, name, phone } = body
 
     if (!email || !password || !name) {
       return NextResponse.json(
@@ -17,23 +17,15 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Direct SQL insert to bypass Prisma issues
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
-
-    await client.connect()
+    // Use SQLite direct connection
+    const Database = require('better-sqlite3')
+    const db = new Database('./dev.db')
 
     // Check if user exists
-    const existingUser = await client.query(
-      'SELECT id FROM organizers WHERE email = $1',
-      [email]
-    )
+    const existingUser = db.prepare('SELECT id FROM organizers WHERE email = ?').get(email)
 
-    if (existingUser.rows.length > 0) {
-      await client.end()
+    if (existingUser) {
+      db.close()
       return NextResponse.json(
         { error: 'User already exists with this email' },
         { status: 400 }
@@ -41,14 +33,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new user
-    const result = await client.query(
-      'INSERT INTO organizers (email, password, name, "createdAt", "updatedAt") VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id, email, name',
-      [email, hashedPassword, name]
-    )
+    const result = db.prepare(`
+      INSERT INTO organizers (email, password, name, phone, emailVerified, phoneVerified, adminApproved, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, 0, 0, 0, datetime('now'), datetime('now'))
+    `).run(email, hashedPassword, name, phone || null)
 
-    await client.end()
+    const user = db.prepare('SELECT id, email, name FROM organizers WHERE id = ?').get(result.lastInsertRowid)
 
-    const user = result.rows[0]
+    db.close()
 
     // Create JWT token
     const token = jwt.sign(
@@ -73,6 +65,20 @@ export async function POST(request: NextRequest) {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
+
+    // Send verification email
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      })
+    } catch (error) {
+      console.error('Failed to send verification email:', error)
+      // Don't fail registration if email sending fails
+    }
 
     return response
   } catch (error: any) {

@@ -20,6 +20,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -53,7 +54,7 @@ export default function RegisterPage() {
       return
     }
 
-    const success = await register(formData.email, formData.password, formData.name)
+    const success = await register(formData.email, formData.password, formData.name, formData.phone)
 
     if (success) {
       router.push('/dashboard')
@@ -125,6 +126,23 @@ export default function RegisterPage() {
                 className="input mt-1"
                 placeholder="your@email.com"
                 value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone number
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                autoComplete="tel"
+                required
+                className="input mt-1"
+                placeholder="+48 123 456 789"
+                value={formData.phone}
                 onChange={handleChange}
               />
             </div>
