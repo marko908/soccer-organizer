@@ -14,6 +14,7 @@ interface Event {
   maxPlayers: number
   pricePerPlayer: number
   participants: any[]
+  paidParticipants: number
 }
 
 export default function Dashboard() {
