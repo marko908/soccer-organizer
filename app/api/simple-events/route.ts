@@ -16,6 +16,9 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const organizerId = decoded.id
 
+    console.log('JWT decoded:', decoded)
+    console.log('Looking for events with organizerId:', organizerId)
+
     // Direct SQL query
     const { Client } = require('pg')
     const client = new Client({
@@ -43,6 +46,9 @@ export async function GET(request: NextRequest) {
       ...event,
       paidParticipants: parseInt(event.paidParticipants) || 0
     }))
+
+    console.log('Query result rows:', result.rows.length)
+    console.log('Events found:', events)
 
     return NextResponse.json({ events })
   } catch (error: any) {
