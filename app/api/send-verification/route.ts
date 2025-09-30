@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,15 +16,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use SQLite direct connection
-    const Database = require('better-sqlite3')
-    const db = new Database('./dev.db')
-
     // Check if organizer exists
-    const organizer = db.prepare('SELECT id, emailVerified FROM organizers WHERE email = ?').get(email)
+    const organizer = await prisma.organizer.findUnique({
+      where: { email },
+      select: { id: true, emailVerified: true }
+    })
 
     if (!organizer) {
-      db.close()
       return NextResponse.json(
         { error: 'Organizer not found' },
         { status: 404 }
@@ -29,7 +30,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (organizer.emailVerified) {
-      db.close()
       return NextResponse.json(
         { error: 'Email already verified' },
         { status: 400 }
@@ -40,13 +40,20 @@ export async function POST(request: NextRequest) {
     const token = crypto.randomBytes(32).toString('hex')
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
-    // Save verification token
-    db.prepare(`
-      INSERT OR REPLACE INTO email_verifications (token, email, organizerId, expiresAt, createdAt)
-      VALUES (?, ?, ?, ?, datetime('now'))
-    `).run(token, email, organizer.id, expiresAt.toISOString())
+    // Delete any existing verification tokens for this organizer
+    await prisma.emailVerification.deleteMany({
+      where: { organizerId: organizer.id }
+    })
 
-    db.close()
+    // Create new verification token
+    await prisma.emailVerification.create({
+      data: {
+        token,
+        email,
+        organizerId: organizer.id,
+        expiresAt
+      }
+    })
 
     // In production, you would send actual email here
     // For now, just return the verification link for testing

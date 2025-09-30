@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,15 +20,12 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Use SQLite direct connection
-    const Database = require('better-sqlite3')
-    const db = new Database('./dev.db')
-
     // Check if user exists
-    const existingUser = db.prepare('SELECT id FROM organizers WHERE email = ?').get(email)
+    const existingUser = await prisma.organizer.findUnique({
+      where: { email }
+    })
 
     if (existingUser) {
-      db.close()
       return NextResponse.json(
         { error: 'User already exists with this email' },
         { status: 400 }
@@ -33,14 +33,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new user
-    const result = db.prepare(`
-      INSERT INTO organizers (email, password, name, phone, emailVerified, phoneVerified, adminApproved, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, 0, 0, 0, datetime('now'), datetime('now'))
-    `).run(email, hashedPassword, name, phone || null)
-
-    const user = db.prepare('SELECT id, email, name FROM organizers WHERE id = ?').get(result.lastInsertRowid)
-
-    db.close()
+    const user = await prisma.organizer.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        phone: phone || null,
+        emailVerified: false,
+        phoneVerified: false,
+        adminApproved: false
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true
+      }
+    })
 
     // Create JWT token
     const token = jwt.sign(

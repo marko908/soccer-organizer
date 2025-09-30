@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,20 +15,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use SQLite direct connection
-    const Database = require('better-sqlite3')
-    const db = new Database('./dev.db')
-
     // Find verification token
-    const verification = db.prepare(`
-      SELECT v.*, o.email
-      FROM email_verifications v
-      JOIN organizers o ON v.organizerId = o.id
-      WHERE v.token = ? AND v.usedAt IS NULL
-    `).get(token)
+    const verification = await prisma.emailVerification.findUnique({
+      where: { token },
+      include: {
+        organizer: {
+          select: { id: true, email: true }
+        }
+      }
+    })
 
-    if (!verification) {
-      db.close()
+    if (!verification || !verification.organizer || verification.usedAt) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 400 }
@@ -34,25 +34,25 @@ export async function POST(request: NextRequest) {
 
     // Check if token is expired
     const now = new Date()
-    const expiresAt = new Date(verification.expiresAt)
 
-    if (now > expiresAt) {
-      db.close()
+    if (now > verification.expiresAt) {
       return NextResponse.json(
         { error: 'Token has expired' },
         { status: 400 }
       )
     }
 
-    // Mark email as verified
-    db.prepare('UPDATE organizers SET emailVerified = 1 WHERE id = ?')
-      .run(verification.organizerId)
-
-    // Mark token as used
-    db.prepare('UPDATE email_verifications SET usedAt = datetime("now") WHERE id = ?')
-      .run(verification.id)
-
-    db.close()
+    // Mark email as verified and token as used
+    await prisma.$transaction([
+      prisma.organizer.update({
+        where: { id: verification.organizerId! },
+        data: { emailVerified: true }
+      }),
+      prisma.emailVerification.update({
+        where: { id: verification.id },
+        data: { usedAt: new Date() }
+      })
+    ])
 
     return NextResponse.json({
       message: 'Email verified successfully',

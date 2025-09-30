@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,43 +26,61 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Use SQLite direct connection
-    const Database = require('better-sqlite3')
-    const db = new Database('./dev.db')
-
     if (action === 'approve') {
       // Approve organizer
-      const result = db.prepare(`
-        UPDATE organizers
-        SET adminApproved = 1, approvedAt = datetime('now'), approvedBy = ?
-        WHERE id = ? AND adminApproved = 0
-      `).run('admin', organizerId)
+      try {
+        const updatedOrganizer = await prisma.organizer.updateMany({
+          where: {
+            id: organizerId,
+            adminApproved: false
+          },
+          data: {
+            adminApproved: true,
+            approvedAt: new Date(),
+            approvedBy: 'admin'
+          }
+        })
 
-      if (result.changes === 0) {
-        db.close()
+        if (updatedOrganizer.count === 0) {
+          return NextResponse.json(
+            { error: 'Organizer not found or already processed' },
+            { status: 404 }
+          )
+        }
+
+        return NextResponse.json({ message: 'Organizer approved successfully' })
+      } catch (error) {
+        console.error('Error approving organizer:', error)
         return NextResponse.json(
-          { error: 'Organizer not found or already processed' },
-          { status: 404 }
+          { error: 'Failed to approve organizer' },
+          { status: 500 }
         )
       }
-
-      db.close()
-      return NextResponse.json({ message: 'Organizer approved successfully' })
     } else {
       // Reject organizer (delete from database)
-      const result = db.prepare('DELETE FROM organizers WHERE id = ? AND adminApproved = 0')
-        .run(organizerId)
+      try {
+        const deletedOrganizer = await prisma.organizer.deleteMany({
+          where: {
+            id: organizerId,
+            adminApproved: false
+          }
+        })
 
-      if (result.changes === 0) {
-        db.close()
+        if (deletedOrganizer.count === 0) {
+          return NextResponse.json(
+            { error: 'Organizer not found or already processed' },
+            { status: 404 }
+          )
+        }
+
+        return NextResponse.json({ message: 'Organizer rejected and removed' })
+      } catch (error) {
+        console.error('Error rejecting organizer:', error)
         return NextResponse.json(
-          { error: 'Organizer not found or already processed' },
-          { status: 404 }
+          { error: 'Failed to reject organizer' },
+          { status: 500 }
         )
       }
-
-      db.close()
-      return NextResponse.json({ message: 'Organizer rejected and removed' })
     }
   } catch (error: any) {
     console.error('Approve organizer error:', error)
