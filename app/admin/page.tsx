@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface PendingOrganizer {
   id: number
@@ -12,9 +15,25 @@ interface PendingOrganizer {
 }
 
 export default function AdminPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [pendingOrganizers, setPendingOrganizers] = useState<PendingOrganizer[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<number | null>(null)
+
+  // Check admin access
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      if (user.role !== 'ADMIN') {
+        router.push('/dashboard')
+        return
+      }
+    }
+  }, [user, authLoading, router])
 
   useEffect(() => {
     fetchPendingOrganizers()
@@ -100,6 +119,31 @@ export default function AdminPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-64">
+        <div className="text-lg text-gray-600">Loading...</div>
+      </div>
+    )
+  }
+
+  // Show unauthorized message for non-admin users
+  if (!user || user.role !== 'ADMIN') {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-6 rounded-lg text-center">
+          <div className="text-4xl mb-4">🚫</div>
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="mb-4">You need admin privileges to access this page.</p>
+          <Link href="/dashboard" className="btn-primary">
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   if (loading) {

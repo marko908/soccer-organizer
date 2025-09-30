@@ -8,6 +8,7 @@ export interface AuthUser {
   id: number
   email: string
   name: string
+  role: 'ADMIN' | 'ORGANIZER'
 }
 
 export async function hashPassword(password: string): Promise<string> {
@@ -20,7 +21,7 @@ export async function verifyPassword(password: string, hashedPassword: string): 
 
 export function generateToken(user: AuthUser): string {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id, email: user.email, name: user.name, role: user.role },
     JWT_SECRET,
     { expiresIn: '7d' }
   )
@@ -79,7 +80,7 @@ export async function authenticateOrganizer(email: string, password: string): Pr
   await client.connect()
 
   const result = await client.query(
-    'SELECT id, email, name, password FROM organizers WHERE email = $1',
+    'SELECT id, email, name, password, role FROM organizers WHERE email = $1',
     [email]
   )
 
@@ -95,5 +96,6 @@ export async function authenticateOrganizer(email: string, password: string): Pr
     id: organizer.id,
     email: organizer.email,
     name: organizer.name,
+    role: organizer.role,
   }
 }

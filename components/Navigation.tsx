@@ -20,6 +20,7 @@ export default function Navigation() {
   const isEventPage = pathname?.startsWith('/event/')
   const isCreatePage = pathname === '/create'
   const isDashboard = pathname === '/dashboard'
+  const isAdminPage = pathname === '/admin'
 
   return (
     <header className="header-gradient sticky top-0 z-50">
@@ -44,6 +45,12 @@ export default function Navigation() {
                 ← {t('manage.backToDashboard')}
               </Link>
             )}
+
+            {isAdminPage && (
+              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 flex items-center">
+                ← Back to Dashboard
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -51,10 +58,22 @@ export default function Navigation() {
               <>
                 {user ? (
                   <>
-                    <span className="text-gray-700">{t('dashboard.welcome')}, {user.name}</span>
+                    <span className="text-gray-700">
+                      {t('dashboard.welcome')}, {user.name}
+                      {user.role === 'ADMIN' && (
+                        <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                          Admin
+                        </span>
+                      )}
+                    </span>
                     {!isDashboard && (
                       <Link href="/dashboard" className="btn-secondary text-sm">
                         {t('nav.dashboard')}
+                      </Link>
+                    )}
+                    {user.role === 'ADMIN' && !isAdminPage && (
+                      <Link href="/admin" className="btn-secondary text-sm bg-red-50 text-red-600 hover:bg-red-100">
+                        Admin Panel
                       </Link>
                     )}
                     <Link href="/create" className="btn-primary text-sm">

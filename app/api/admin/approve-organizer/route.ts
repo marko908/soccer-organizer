@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { getAuthUser } from '@/lib/simple-auth'
 
 const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    // In production, add admin authentication here
-    // const user = await getAuthUser(request)
-    // if (!user || !user.isAdmin) return 401
+    // Admin authentication required
+    const user = await getAuthUser(request)
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      )
+    }
 
     const body = await request.json()
     const { organizerId, action } = body

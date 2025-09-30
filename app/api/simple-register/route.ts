@@ -46,13 +46,14 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        name: true
+        name: true,
+        role: true
       }
     })
 
     // Create JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name },
+      { id: user.id, email: user.email, name: user.name, role: user.role },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     )
@@ -62,7 +63,8 @@ export async function POST(request: NextRequest) {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name
+        name: user.name,
+        role: user.role
       },
       token
     })
