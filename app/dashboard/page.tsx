@@ -39,7 +39,7 @@ export default function Dashboard() {
       const response = await fetch('/api/simple-events')
       if (response.ok) {
         const data = await response.json()
-        setEvents(data)
+        setEvents(data.events || [])
       }
     } catch (error) {
       console.error('Error fetching events:', error)
@@ -84,7 +84,7 @@ export default function Dashboard() {
         ) : events.length > 0 ? (
           <div className="space-y-4">
             {events.map((event) => {
-              const paidParticipants = event.participants?.length || 0
+              const paidParticipants = event.paidParticipants || 0
               const collectedAmount = paidParticipants * event.pricePerPlayer
               const progressPercentage = (collectedAmount / event.totalCost) * 100
 
