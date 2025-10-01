@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
     // Test database connection
-    const organizerCount = await prisma.organizer.count()
+    const { count: organizerCount, error } = await supabase
+      .from('organizers')
+      .select('*', { count: 'exact', head: true })
+
+    if (error) throw error
 
     return NextResponse.json({
       success: true,
       message: 'Database connected successfully',
       organizerCount,
       env: {
-        hasDatabase: !!process.env.DATABASE_URL,
+        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         hasJwtSecret: !!process.env.JWT_SECRET,
         nodeEnv: process.env.NODE_ENV
       }
@@ -22,7 +27,8 @@ export async function GET(request: NextRequest) {
       error: error.message,
       stack: error.stack,
       env: {
-        hasDatabase: !!process.env.DATABASE_URL,
+        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         hasJwtSecret: !!process.env.JWT_SECRET,
         nodeEnv: process.env.NODE_ENV
       }
@@ -36,13 +42,17 @@ export async function POST(request: NextRequest) {
     const { email, password, name } = body
 
     // Test user creation
-    const user = await prisma.organizer.create({
-      data: {
+    const { data: user, error } = await supabase
+      .from('organizers')
+      .insert({
         email,
         password: 'test-hash',
         name
-      }
-    })
+      })
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json({
       success: true,

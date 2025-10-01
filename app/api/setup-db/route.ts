@@ -1,60 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    // Create organizers table
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "organizers" (
-        "id" SERIAL NOT NULL,
-        "email" TEXT NOT NULL,
-        "password" TEXT NOT NULL,
-        "name" TEXT NOT NULL,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "organizers_pkey" PRIMARY KEY ("id")
-      )
-    `
-
-    // Create unique index for email
-    await prisma.$executeRaw`
-      CREATE UNIQUE INDEX IF NOT EXISTS "organizers_email_key" ON "organizers"("email")
-    `
-
-    // Create events table
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "events" (
-        "id" SERIAL NOT NULL,
-        "name" TEXT NOT NULL,
-        "date" TIMESTAMP(3) NOT NULL,
-        "location" TEXT NOT NULL,
-        "totalCost" DOUBLE PRECISION NOT NULL,
-        "maxPlayers" INTEGER NOT NULL,
-        "pricePerPlayer" DOUBLE PRECISION NOT NULL,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "organizerId" INTEGER NOT NULL,
-        CONSTRAINT "events_pkey" PRIMARY KEY ("id")
-      )
-    `
-
-    // Create participants table
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS "participants" (
-        "id" SERIAL NOT NULL,
-        "name" TEXT NOT NULL,
-        "email" TEXT,
-        "paymentStatus" TEXT NOT NULL DEFAULT 'pending',
-        "stripePaymentIntentId" TEXT,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "eventId" INTEGER NOT NULL,
-        CONSTRAINT "participants_pkey" PRIMARY KEY ("id")
-      )
-    `
+    // Note: Supabase tables should be created through the Supabase Dashboard or migrations.
+    // This endpoint is kept for compatibility but doesn't perform actual table creation.
+    // Tables should already exist in Supabase with the following schema:
+    // - organizers (id, email, password, name, created_at, updated_at)
+    // - events (id, name, date, location, total_cost, max_players, price_per_player, created_at, updated_at, organizer_id)
+    // - participants (id, name, email, payment_status, stripe_payment_intent_id, created_at, event_id)
 
     return NextResponse.json({
       success: true,
-      message: 'Database tables created successfully'
+      message: 'Supabase tables should be created through the Supabase Dashboard or migrations'
     })
   } catch (error: any) {
     return NextResponse.json({

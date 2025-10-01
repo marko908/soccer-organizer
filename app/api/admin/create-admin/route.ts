@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { supabase } from '@/lib/supabase'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
     // Check if admin already exists
-    const existingAdmin = await prisma.organizer.findFirst({
-      where: { role: 'ADMIN' }
-    })
+    const { data: existingAdmin } = await supabase
+      .from('organizers')
+      .select('id')
+      .eq('role', 'ADMIN')
+      .single()
 
     if (existingAdmin) {
       return NextResponse.json(
@@ -41,25 +41,23 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Create admin user
-    const admin = await prisma.organizer.create({
-      data: {
+    const { data: admin, error } = await supabase
+      .from('organizers')
+      .insert({
         email,
         password: hashedPassword,
         name,
         role: 'ADMIN',
-        emailVerified: true,
-        phoneVerified: true,
-        adminApproved: true,
-        approvedAt: new Date(),
-        approvedBy: 'system'
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true
-      }
-    })
+        email_verified: true,
+        phone_verified: true,
+        admin_approved: true,
+        approved_at: new Date().toISOString(),
+        approved_by: 'system'
+      })
+      .select('id, email, name, role')
+      .single()
+
+    if (error) throw error
 
     // Create JWT token
     const token = jwt.sign(

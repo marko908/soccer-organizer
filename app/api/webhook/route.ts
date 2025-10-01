@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { headers } from 'next/headers'
 
 export async function POST(request: NextRequest) {
@@ -38,15 +38,17 @@ export async function POST(request: NextRequest) {
     try {
       const { eventId, participantName, participantEmail } = session.metadata
 
-      await prisma.participant.create({
-        data: {
+      const { error } = await supabase
+        .from('participants')
+        .insert({
           name: participantName,
           email: participantEmail || null,
-          paymentStatus: 'succeeded',
-          stripePaymentIntentId: session.payment_intent,
-          eventId: parseInt(eventId),
-        },
-      })
+          payment_status: 'succeeded',
+          stripe_payment_intent_id: session.payment_intent,
+          event_id: parseInt(eventId),
+        })
+
+      if (error) throw error
 
       console.log(`Participant ${participantName} successfully added to event ${eventId}`)
     } catch (error) {

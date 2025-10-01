@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/simple-auth'
-
-const prisma = new PrismaClient()
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,21 +14,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all organizers waiting for approval
-    const organizers = await prisma.organizer.findMany({
-      where: { adminApproved: false },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        emailVerified: true,
-        adminApproved: true,
-        createdAt: true
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    const { data: organizers, error } = await supabase
+      .from('organizers')
+      .select('id, name, email, phone, email_verified, admin_approved, created_at')
+      .eq('admin_approved', false)
+      .order('created_at', { ascending: false })
 
-    return NextResponse.json({ organizers })
+    if (error) throw error
+
+    // Convert snake_case to camelCase for frontend compatibility
+    const formattedOrganizers = organizers?.map(org => ({
+      id: org.id,
+      name: org.name,
+      email: org.email,
+      phone: org.phone,
+      emailVerified: org.email_verified,
+      adminApproved: org.admin_approved,
+      createdAt: org.created_at
+    }))
+
+    return NextResponse.json({ organizers: formattedOrganizers })
   } catch (error: any) {
     console.error('Get pending organizers error:', error)
     return NextResponse.json(

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,19 +15,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if organizer exists
-    const organizer = await prisma.organizer.findUnique({
-      where: { email },
-      select: { id: true, emailVerified: true }
-    })
+    const { data: organizer, error: orgError } = await supabase
+      .from('organizers')
+      .select('id, email_verified')
+      .eq('email', email)
+      .single()
 
-    if (!organizer) {
+    if (orgError || !organizer) {
       return NextResponse.json(
         { error: 'Organizer not found' },
         { status: 404 }
       )
     }
 
-    if (organizer.emailVerified) {
+    if (organizer.email_verified) {
       return NextResponse.json(
         { error: 'Email already verified' },
         { status: 400 }
@@ -41,19 +40,22 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
     // Delete any existing verification tokens for this organizer
-    await prisma.emailVerification.deleteMany({
-      where: { organizerId: organizer.id }
-    })
+    await supabase
+      .from('email_verifications')
+      .delete()
+      .eq('organizer_id', organizer.id)
 
     // Create new verification token
-    await prisma.emailVerification.create({
-      data: {
+    const { error: insertError } = await supabase
+      .from('email_verifications')
+      .insert({
         token,
         email,
-        organizerId: organizer.id,
-        expiresAt
-      }
-    })
+        organizer_id: organizer.id,
+        expires_at: expiresAt.toISOString()
+      })
+
+    if (insertError) throw insertError
 
     // In production, you would send actual email here
     // For now, just return the verification link for testing

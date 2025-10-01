@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
@@ -10,9 +10,11 @@ export async function POST(request: NextRequest) {
     console.log('Received registration request:', { email, name })
 
     // Check if user already exists
-    const existingUser = await prisma.organizer.findUnique({
-      where: { email }
-    })
+    const { data: existingUser } = await supabase
+      .from('organizers')
+      .select('*')
+      .eq('email', email)
+      .single()
 
     if (existingUser) {
       return NextResponse.json(
@@ -25,13 +27,17 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Create user
-    const user = await prisma.organizer.create({
-      data: {
+    const { data: user, error } = await supabase
+      .from('organizers')
+      .insert({
         email,
         password: hashedPassword,
         name
-      }
-    })
+      })
+      .select()
+      .single()
+
+    if (error) throw error
 
     console.log('User created successfully:', user.id)
 

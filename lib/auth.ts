@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { prisma } from './prisma'
+import { supabase } from './supabase'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-this-in-production'
 
@@ -50,21 +50,28 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 export async function createOrganizer(email: string, password: string, name: string) {
   const hashedPassword = await hashPassword(password)
 
-  return prisma.organizer.create({
-    data: {
+  const { data, error } = await supabase
+    .from('organizers')
+    .insert({
       email,
       password: hashedPassword,
       name,
-    },
-  })
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
 }
 
 export async function authenticateOrganizer(email: string, password: string): Promise<AuthUser | null> {
-  const organizer = await prisma.organizer.findUnique({
-    where: { email },
-  })
+  const { data: organizer, error } = await supabase
+    .from('organizers')
+    .select('*')
+    .eq('email', email)
+    .single()
 
-  if (!organizer) return null
+  if (error || !organizer) return null
 
   const isValid = await verifyPassword(password, organizer.password)
   if (!isValid) return null

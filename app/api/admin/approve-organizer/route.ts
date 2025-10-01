@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/simple-auth'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,19 +33,20 @@ export async function POST(request: NextRequest) {
     if (action === 'approve') {
       // Approve organizer
       try {
-        const updatedOrganizer = await prisma.organizer.updateMany({
-          where: {
-            id: organizerId,
-            adminApproved: false
-          },
-          data: {
-            adminApproved: true,
-            approvedAt: new Date(),
-            approvedBy: 'admin'
-          }
-        })
+        const { data, error } = await supabase
+          .from('organizers')
+          .update({
+            admin_approved: true,
+            approved_at: new Date().toISOString(),
+            approved_by: 'admin'
+          })
+          .eq('id', organizerId)
+          .eq('admin_approved', false)
+          .select()
 
-        if (updatedOrganizer.count === 0) {
+        if (error) throw error
+
+        if (!data || data.length === 0) {
           return NextResponse.json(
             { error: 'Organizer not found or already processed' },
             { status: 404 }
@@ -65,14 +64,16 @@ export async function POST(request: NextRequest) {
     } else {
       // Reject organizer (delete from database)
       try {
-        const deletedOrganizer = await prisma.organizer.deleteMany({
-          where: {
-            id: organizerId,
-            adminApproved: false
-          }
-        })
+        const { data, error } = await supabase
+          .from('organizers')
+          .delete()
+          .eq('id', organizerId)
+          .eq('admin_approved', false)
+          .select()
 
-        if (deletedOrganizer.count === 0) {
+        if (error) throw error
+
+        if (!data || data.length === 0) {
           return NextResponse.json(
             { error: 'Organizer not found or already processed' },
             { status: 404 }

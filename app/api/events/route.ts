@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
@@ -24,17 +24,21 @@ export async function POST(request: NextRequest) {
 
     const pricePerPlayer = totalCost / maxPlayers
 
-    const event = await prisma.event.create({
-      data: {
+    const { data: event, error } = await supabase
+      .from('events')
+      .insert({
         name,
-        date: new Date(date),
+        date: new Date(date).toISOString(),
         location,
-        totalCost: parseFloat(totalCost),
-        maxPlayers: parseInt(maxPlayers),
-        pricePerPlayer,
-        organizerId: user.id,
-      },
-    })
+        total_cost: parseFloat(totalCost),
+        max_players: parseInt(maxPlayers),
+        price_per_player: pricePerPlayer,
+        organizer_id: user.id,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
 
     return NextResponse.json(event)
   } catch (error) {
@@ -48,20 +52,29 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const events = await prisma.event.findMany({
-      include: {
-        participants: {
-          where: {
-            paymentStatus: 'succeeded'
-          }
-        }
-      },
-      orderBy: {
-        date: 'asc'
-      }
-    })
+    // Get all events
+    const { data: events, error: eventsError } = await supabase
+      .from('events')
+      .select('*')
+      .order('date', { ascending: true })
 
-    return NextResponse.json(events)
+    if (eventsError) throw eventsError
+
+    // Get all participants with succeeded payment status
+    const { data: allParticipants, error: participantsError } = await supabase
+      .from('participants')
+      .select('*')
+      .eq('payment_status', 'succeeded')
+
+    if (participantsError) throw participantsError
+
+    // Combine events with their participants
+    const eventsWithParticipants = events?.map(event => ({
+      ...event,
+      participants: allParticipants?.filter(p => p.event_id === event.id) || []
+    })) || []
+
+    return NextResponse.json(eventsWithParticipants)
   } catch (error) {
     console.error('Error fetching events:', error)
     return NextResponse.json(

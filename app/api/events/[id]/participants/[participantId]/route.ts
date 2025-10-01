@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/auth'
 
 export async function DELETE(
@@ -19,14 +19,14 @@ export async function DELETE(
     const participantId = parseInt(params.participantId)
 
     // Check if event exists and belongs to the organizer
-    const event = await prisma.event.findFirst({
-      where: {
-        id: eventId,
-        organizerId: user.id
-      }
-    })
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .eq('organizer_id', user.id)
+      .single()
 
-    if (!event) {
+    if (eventError || !event) {
       return NextResponse.json(
         { error: 'Event not found or unauthorized' },
         { status: 404 }
@@ -34,14 +34,14 @@ export async function DELETE(
     }
 
     // Check if participant exists and belongs to this event
-    const participant = await prisma.participant.findFirst({
-      where: {
-        id: participantId,
-        eventId: eventId
-      }
-    })
+    const { data: participant, error: participantError } = await supabase
+      .from('participants')
+      .select('*')
+      .eq('id', participantId)
+      .eq('event_id', eventId)
+      .single()
 
-    if (!participant) {
+    if (participantError || !participant) {
       return NextResponse.json(
         { error: 'Participant not found' },
         { status: 404 }
@@ -49,11 +49,12 @@ export async function DELETE(
     }
 
     // Delete the participant
-    await prisma.participant.delete({
-      where: {
-        id: participantId
-      }
-    })
+    const { error: deleteError } = await supabase
+      .from('participants')
+      .delete()
+      .eq('id', participantId)
+
+    if (deleteError) throw deleteError
 
     return NextResponse.json({ message: 'Participant removed successfully' })
   } catch (error) {

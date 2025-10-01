@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { getAuthUser } from '@/lib/auth'
 
 export async function POST(
@@ -27,27 +27,31 @@ export async function POST(
     }
 
     // Check if event exists and belongs to the organizer
-    const event = await prisma.event.findFirst({
-      where: {
-        id: eventId,
-        organizerId: user.id
-      },
-      include: {
-        participants: {
-          where: { paymentStatus: 'succeeded' }
-        }
-      }
-    })
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .eq('organizer_id', user.id)
+      .single()
 
-    if (!event) {
+    if (eventError || !event) {
       return NextResponse.json(
         { error: 'Event not found or unauthorized' },
         { status: 404 }
       )
     }
 
+    // Get participants with succeeded payment status
+    const { data: participants, error: participantsError } = await supabase
+      .from('participants')
+      .select('*')
+      .eq('event_id', eventId)
+      .eq('payment_status', 'succeeded')
+
+    if (participantsError) throw participantsError
+
     // Check if event is full
-    if (event.participants.length >= event.maxPlayers) {
+    if ((participants?.length || 0) >= event.max_players) {
       return NextResponse.json(
         { error: 'Event is full' },
         { status: 400 }
@@ -55,15 +59,19 @@ export async function POST(
     }
 
     // Create participant with cash payment status
-    const participant = await prisma.participant.create({
-      data: {
+    const { data: participant, error: insertError } = await supabase
+      .from('participants')
+      .insert({
         name: name.trim(),
         email: email?.trim() || null,
-        paymentStatus: 'succeeded', // Cash payments are considered succeeded
-        stripePaymentIntentId: null, // No Stripe payment for cash
-        eventId: eventId,
-      },
-    })
+        payment_status: 'succeeded', // Cash payments are considered succeeded
+        stripe_payment_intent_id: null, // No Stripe payment for cash
+        event_id: eventId,
+      })
+      .select()
+      .single()
+
+    if (insertError) throw insertError
 
     return NextResponse.json(participant)
   } catch (error) {

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,16 +14,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Find verification token
-    const verification = await prisma.emailVerification.findUnique({
-      where: { token },
-      include: {
-        organizer: {
-          select: { id: true, email: true }
-        }
-      }
-    })
+    const { data: verification, error: verifyError } = await supabase
+      .from('email_verifications')
+      .select('*, organizers:organizer_id(id, email)')
+      .eq('token', token)
+      .single()
 
-    if (!verification || !verification.organizer || verification.usedAt) {
+    if (verifyError || !verification || !verification.organizers || verification.used_at) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 400 }
@@ -34,25 +29,30 @@ export async function POST(request: NextRequest) {
 
     // Check if token is expired
     const now = new Date()
+    const expiresAt = new Date(verification.expires_at)
 
-    if (now > verification.expiresAt) {
+    if (now > expiresAt) {
       return NextResponse.json(
         { error: 'Token has expired' },
         { status: 400 }
       )
     }
 
-    // Mark email as verified and token as used
-    await prisma.$transaction([
-      prisma.organizer.update({
-        where: { id: verification.organizerId! },
-        data: { emailVerified: true }
-      }),
-      prisma.emailVerification.update({
-        where: { id: verification.id },
-        data: { usedAt: new Date() }
-      })
-    ])
+    // Mark email as verified
+    const { error: updateOrgError } = await supabase
+      .from('organizers')
+      .update({ email_verified: true })
+      .eq('id', verification.organizer_id)
+
+    if (updateOrgError) throw updateOrgError
+
+    // Mark token as used
+    const { error: updateVerifyError } = await supabase
+      .from('email_verifications')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', verification.id)
+
+    if (updateVerifyError) throw updateVerifyError
 
     return NextResponse.json({
       message: 'Email verified successfully',

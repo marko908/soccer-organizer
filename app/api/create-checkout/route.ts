@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,23 +14,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const event = await prisma.event.findUnique({
-      where: { id: parseInt(eventId) },
-      include: {
-        participants: {
-          where: { paymentStatus: 'succeeded' }
-        }
-      }
-    })
+    // Get event details
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', parseInt(eventId))
+      .single()
 
-    if (!event) {
+    if (eventError || !event) {
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
       )
     }
 
-    if (event.participants.length >= event.maxPlayers) {
+    // Get participants with succeeded payment status
+    const { data: participants, error: participantsError } = await supabase
+      .from('participants')
+      .select('*')
+      .eq('event_id', parseInt(eventId))
+      .eq('payment_status', 'succeeded')
+
+    if (participantsError) throw participantsError
+
+    if ((participants?.length || 0) >= event.max_players) {
       return NextResponse.json(
         { error: 'Event is full' },
         { status: 400 }
@@ -48,7 +55,7 @@ export async function POST(request: NextRequest) {
               name: `${event.name} - Soccer Game`,
               description: `${event.location} on ${new Date(event.date).toLocaleDateString()}`,
             },
-            unit_amount: Math.round(event.pricePerPlayer * 100), // Convert to cents
+            unit_amount: Math.round(event.price_per_player * 100), // Convert to cents
           },
           quantity: 1,
         },
