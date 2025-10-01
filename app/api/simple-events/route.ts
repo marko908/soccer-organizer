@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from JWT token (check both cookie names for compatibility)
-    const token = request.cookies.get('auth-token')?.value || request.cookies.get('token')?.value
+    const supabase = await createServerSupabaseClient()
 
-    if (!token) {
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+    if (sessionError || !session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
-    const organizerId = decoded.id
+    const organizerId = session.user.id
 
-    console.log('JWT decoded:', decoded)
+    console.log('Session user:', session.user.id)
     console.log('Looking for events with organizerId:', organizerId)
 
     // Direct SQL query
@@ -71,18 +72,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user from JWT token (check both cookie names for compatibility)
-    const token = request.cookies.get('auth-token')?.value || request.cookies.get('token')?.value
+    const supabase = await createServerSupabaseClient()
 
-    if (!token) {
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+    if (sessionError || !session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
-    const organizerId = decoded.id
+    const organizerId = session.user.id
 
     const body = await request.json()
     const { name, date, location, totalCost, maxPlayers } = body

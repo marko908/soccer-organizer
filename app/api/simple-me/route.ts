@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthUser } from '@/lib/simple-auth'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthUser(request)
+    const supabase = await createServerSupabaseClient()
 
-    if (!user) {
+    // Get current session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+    if (sessionError || !session) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       )
+    }
+
+    // Get user profile from organizers table
+    const { data: profile } = await supabase
+      .from('organizers')
+      .select('name, role')
+      .eq('id', session.user.id)
+      .single()
+
+    const user = {
+      id: session.user.id,
+      email: session.user.email!,
+      name: profile?.name || session.user.user_metadata?.name || 'User',
+      role: (profile?.role || 'ORGANIZER') as 'ADMIN' | 'ORGANIZER',
     }
 
     return NextResponse.json({ user })

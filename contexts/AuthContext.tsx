@@ -1,9 +1,10 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface User {
-  id: number
+  id: string
   email: string
   name: string
   role: 'ADMIN' | 'ORGANIZER'
@@ -25,14 +26,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkAuth()
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        await fetchUserProfile(session.user.id)
+      } else {
+        setUser(null)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from('organizers')
+      .select('name, role')
+      .eq('id', userId)
+      .single()
+
+    const { data: { user: authUser } } = await supabase.auth.getUser()
+
+    if (authUser) {
+      setUser({
+        id: authUser.id,
+        email: authUser.email!,
+        name: profile?.name || authUser.user_metadata?.name || 'User',
+        role: (profile?.role || 'ORGANIZER') as 'ADMIN' | 'ORGANIZER',
+      })
+    }
+  }
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/simple-me')
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session?.user) {
+        await fetchUserProfile(session.user.id)
       }
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -43,19 +76,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/simple-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
+      if (error) {
+        console.error('Login error:', error)
+        return false
+      }
+
+      if (data.user) {
+        await fetchUserProfile(data.user.id)
         return true
       }
+
       return false
     } catch (error) {
       console.error('Login failed:', error)
@@ -65,19 +100,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (email: string, password: string, name: string, phone?: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/simple-register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            phone: phone || null,
+          },
         },
-        body: JSON.stringify({ email, password, name, phone }),
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        setUser(data.user)
+      if (error) {
+        console.error('Registration error:', error)
+        return false
+      }
+
+      if (data.user) {
+        // Create organizer profile
+        await supabase.from('organizers').insert({
+          id: data.user.id,
+          email: data.user.email!,
+          name,
+          phone: phone || null,
+          role: 'ORGANIZER',
+          email_verified: false,
+          phone_verified: false,
+          admin_approved: false,
+        })
+
+        await fetchUserProfile(data.user.id)
         return true
       }
+
       return false
     } catch (error) {
       console.error('Registration failed:', error)
@@ -87,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/simple-logout', { method: 'POST' })
+      await supabase.auth.signOut()
       setUser(null)
     } catch (error) {
       console.error('Logout failed:', error)

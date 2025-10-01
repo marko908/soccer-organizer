@@ -49,15 +49,29 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
 }
 
 export async function authenticateOrganizer(email: string, password: string): Promise<AuthUser | null> {
+  console.log('Authenticating organizer:', email)
+
   const { data: organizer, error } = await supabase
     .from('organizers')
     .select('id, email, name, password, role')
     .eq('email', email)
     .single()
 
-  if (error || !organizer) return null
+  if (error) {
+    console.error('Supabase error:', error)
+    return null
+  }
+
+  if (!organizer) {
+    console.log('No organizer found for email:', email)
+    return null
+  }
+
+  console.log('Organizer found:', { id: organizer.id, email: organizer.email, hasPassword: !!organizer.password })
 
   const isValid = await verifyPassword(password, organizer.password)
+  console.log('Password valid:', isValid)
+
   if (!isValid) return null
 
   return {

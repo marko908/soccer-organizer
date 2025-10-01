@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { supabase } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,77 +13,65 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const supabase = await createServerSupabaseClient()
 
-    // Check if user exists
-    const { data: existingUser } = await supabase
-      .from('organizers')
-      .select('id')
-      .eq('email', email)
-      .single()
+    // Sign up with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          phone: phone || null,
+        },
+      },
+    })
 
-    if (existingUser) {
+    if (authError) {
+      console.error('Supabase Auth error:', authError)
       return NextResponse.json(
-        { error: 'User already exists with this email' },
+        { error: authError.message },
         { status: 400 }
       )
     }
 
-    // Insert new user
-    const { data: user, error } = await supabase
-      .from('organizers')
-      .insert({
-        email,
-        password: hashedPassword,
-        name,
-        phone: phone || null,
-        role: 'ORGANIZER',
-        email_verified: false,
-        phone_verified: false,
-        admin_approved: false
-      })
-      .select('id, email, name, role')
-      .single()
-
-    if (error) {
-      console.error('Database error:', error)
+    if (!authData.user) {
       return NextResponse.json(
         { error: 'Failed to create user' },
         { status: 500 }
       )
     }
 
-    // Create JWT token
-    const token = jwt.sign(
-      { id: user.id, email: user.email, name: user.name, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    )
+    // Create organizer profile in our custom table
+    const { error: profileError } = await supabase
+      .from('organizers')
+      .insert({
+        id: authData.user.id, // Use auth user ID
+        email: authData.user.email!,
+        name,
+        phone: phone || null,
+        role: 'ORGANIZER',
+        email_verified: false,
+        phone_verified: false,
+        admin_approved: false,
+      })
 
-    const response = NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role
-      },
-      token
-    })
-
-    // Set both cookie names for compatibility
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict' as const,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // Don't fail the request - auth user is created
     }
 
-    response.cookies.set('token', token, cookieOptions)
-    response.cookies.set('auth-token', token, cookieOptions)
+    const user = {
+      id: authData.user.id,
+      email: authData.user.email!,
+      name,
+      role: 'ORGANIZER' as const,
+    }
 
-    return response
+    return NextResponse.json({
+      user,
+      session: authData.session,
+    })
   } catch (error: any) {
     console.error('Registration error:', error)
     return NextResponse.json(

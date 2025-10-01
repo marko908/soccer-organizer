@@ -23,7 +23,7 @@ interface Event {
   paidParticipants: number
   collectedAmount: number
   availableSpots: number
-  organizerId: number
+  organizerId: string
 }
 
 export default function EventPage() {

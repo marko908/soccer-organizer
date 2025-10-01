@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateOrganizer, generateToken } from '@/lib/simple-auth'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,32 +12,47 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = await authenticateOrganizer(email, password)
+    const supabase = await createServerSupabaseClient()
 
-    if (!user) {
+    // Sign in with Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (authError) {
+      console.error('Supabase Auth error:', authError)
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       )
     }
 
-    const token = generateToken(user)
-
-    const response = NextResponse.json({ user, token })
-
-    // Set both cookie names for compatibility
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict' as const,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      path: '/',
+    if (!authData.user || !authData.session) {
+      return NextResponse.json(
+        { error: 'Invalid email or password' },
+        { status: 401 }
+      )
     }
 
-    response.cookies.set('token', token, cookieOptions)
-    response.cookies.set('auth-token', token, cookieOptions)
+    // Get user profile from organizers table
+    const { data: profile } = await supabase
+      .from('organizers')
+      .select('name, role')
+      .eq('id', authData.user.id)
+      .single()
 
-    return response
+    const user = {
+      id: authData.user.id,
+      email: authData.user.email!,
+      name: profile?.name || authData.user.user_metadata?.name || 'User',
+      role: (profile?.role || 'ORGANIZER') as 'ADMIN' | 'ORGANIZER',
+    }
+
+    return NextResponse.json({
+      user,
+      session: authData.session,
+    })
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
