@@ -21,7 +21,7 @@ git push origin main
 1. Go to [vercel.com](https://vercel.com)
 2. Sign up/login with GitHub
 3. Click "New Project"
-4. Import your `soccer-organizer` repository
+4. Import your `foothub` repository
 5. Vercel will auto-detect Next.js settings
 
 ### 4. Configure Environment Variables

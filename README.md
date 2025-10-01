@@ -1,4 +1,4 @@
-# Soccer Organizer MVP
+# Foothub
 
 A pay-to-play soccer game organization web application built with Next.js, Supabase, and Stripe.
 

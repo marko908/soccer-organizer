@@ -96,7 +96,7 @@ const translations: Record<Language, Record<string, string>> = {
     'home.step3Title': 'Graj!',
     'home.step3Description': 'Śledź płatności w czasie rzeczywistym. Gdy osiągniesz wystarczającą liczbę graczy, zaczynajcie grę!',
     'home.readyToOrganize': 'Gotowy na zorganizowanie pierwszej gry?',
-    'home.joinOrganizers': 'Dołącz do organizatorów, którzy ufają Soccer Organizer w swoich grach',
+    'home.joinOrganizers': 'Dołącz do organizatorów, którzy ufają Foothub w swoich grach',
     'home.startFreeToday': 'Zacznij dziś za darmo',
 
     // Features
@@ -267,7 +267,7 @@ const translations: Record<Language, Record<string, string>> = {
     'home.step3Title': 'Play Ball!',
     'home.step3Description': 'Track payments in real-time. When you reach enough players, game on!',
     'home.readyToOrganize': 'Ready to organize your first game?',
-    'home.joinOrganizers': 'Join organizers who trust Soccer Organizer for their games',
+    'home.joinOrganizers': 'Join organizers who trust Foothub for their games',
     'home.startFreeToday': 'Start Free Today',
 
     // Features

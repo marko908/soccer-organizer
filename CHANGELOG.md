@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [2025-10-01] - Rebrand to Foothub
+
+### Changed
+- **Application Name:** Renamed from "Soccer Organizer" to "Foothub"
+  - Updated `package.json` name field
+  - Updated README.md title
+  - Updated DEPLOYMENT.md references
+  - Repository slug remains: `soccer-organizer` (GitHub repository name unchanged)
+
+---
+
+## [2025-10-01] - Documentation Cleanup
+
 ### Changed
 - Created CHANGELOG.md to track all project updates and changes
 

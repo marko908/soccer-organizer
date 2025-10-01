@@ -8,7 +8,7 @@ import Navigation from '@/components/Navigation'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Soccer Organizer',
+  title: 'Foothub',
   description: 'Organize soccer games with pay-to-play system',
 }
 
