@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +19,11 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // Check if user exists
-    const existingUser = await prisma.organizer.findUnique({
-      where: { email }
-    })
+    const { data: existingUser } = await supabase
+      .from('organizers')
+      .select('id')
+      .eq('email', email)
+      .single()
 
     if (existingUser) {
       return NextResponse.json(
@@ -33,23 +33,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert new user
-    const user = await prisma.organizer.create({
-      data: {
+    const { data: user, error } = await supabase
+      .from('organizers')
+      .insert({
         email,
         password: hashedPassword,
         name,
         phone: phone || null,
+        role: 'ORGANIZER',
         emailVerified: false,
         phoneVerified: false,
         adminApproved: false
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true
-      }
-    })
+      })
+      .select('id, email, name, role')
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      return NextResponse.json(
+        { error: 'Failed to create user' },
+        { status: 500 }
+      )
+    }
 
     // Create JWT token
     const token = jwt.sign(
@@ -75,20 +80,6 @@ export async function POST(request: NextRequest) {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     })
-
-    // Send verification email
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-verification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      })
-    } catch (error) {
-      console.error('Failed to send verification email:', error)
-      // Don't fail registration if email sending fails
-    }
 
     return response
   } catch (error: any) {

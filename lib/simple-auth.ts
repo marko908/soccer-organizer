@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import { supabase } from '@/lib/supabase'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-this-in-production'
 
@@ -38,7 +39,7 @@ export function verifyToken(token: string): AuthUser | null {
 
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
   const authHeader = request.headers.get('authorization')
-  const cookieToken = request.cookies.get('auth-token')?.value
+  const cookieToken = request.cookies.get('auth-token')?.value || request.cookies.get('token')?.value
 
   const token = authHeader?.replace('Bearer ', '') || cookieToken
 
@@ -47,47 +48,14 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
   return verifyToken(token)
 }
 
-export async function createOrganizer(email: string, password: string, name: string) {
-  const hashedPassword = await hashPassword(password)
-
-  const { Client } = require('pg')
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  })
-
-  await client.connect()
-
-  const result = await client.query(
-    `INSERT INTO organizers (email, password, name, "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, NOW(), NOW())
-     RETURNING id, email, name`,
-    [email, hashedPassword, name]
-  )
-
-  await client.end()
-
-  return result.rows[0]
-}
-
 export async function authenticateOrganizer(email: string, password: string): Promise<AuthUser | null> {
-  const { Client } = require('pg')
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
-  })
+  const { data: organizer, error } = await supabase
+    .from('organizers')
+    .select('id, email, name, password, role')
+    .eq('email', email)
+    .single()
 
-  await client.connect()
-
-  const result = await client.query(
-    'SELECT id, email, name, password, role FROM organizers WHERE email = $1',
-    [email]
-  )
-
-  await client.end()
-
-  const organizer = result.rows[0]
-  if (!organizer) return null
+  if (error || !organizer) return null
 
   const isValid = await verifyPassword(password, organizer.password)
   if (!isValid) return null
@@ -96,6 +64,6 @@ export async function authenticateOrganizer(email: string, password: string): Pr
     id: organizer.id,
     email: organizer.email,
     name: organizer.name,
-    role: organizer.role,
+    role: organizer.role as 'ADMIN' | 'ORGANIZER',
   }
 }
