@@ -11,6 +11,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02] - Registration & Email Confirmation Fixes
+
+### Fixed
+- **Registration RLS Policy Issues**
+  - Issue: Users could not create their own profile during registration (RLS blocked INSERT)
+  - Added permissive INSERT policy: `WITH CHECK (true)` to allow user registration
+  - Created `supabase-simple-fix.sql` with working RLS policies
+  - Created `supabase-cleanup-duplicate-policies.sql` to remove conflicting policies
+
+- **Database Schema Issues**
+  - Removed old `name` column that had NOT NULL constraint
+  - Migration from `name` → `full_name` was incomplete
+  - Error: "null value in column 'name' violates not-null constraint"
+  - Solution: `ALTER TABLE users DROP COLUMN IF EXISTS name`
+
+- **Enhanced Error Logging**
+  - Added detailed console error messages with emojis for easy debugging
+  - Shows specific error codes, user ID, email, and nickname
+  - Detects RLS policy errors and provides solution instructions
+  - Detects duplicate email/nickname conflicts with clear messages
+  - Error code detection: 23502 (NOT NULL), 23505 (unique violation), 42501 (RLS)
+
+- **Email Confirmation Flow**
+  - Registration now shows "Check your email" success screen
+  - Added `emailRedirectTo` configuration in AuthContext
+  - Better error messages for duplicate email/nickname
+  - Profile creation error handling improved
+  - User stays on registration page instead of auto-redirecting
+
+### Added
+- **Troubleshooting Documentation**
+  - `SUPABASE-QUICK-FIX.md` - Comprehensive registration debugging guide
+  - `SUPABASE-EMAIL-SETUP.md` - Email configuration instructions
+  - `FIX-EMAIL-CONFIRMATION.md` - Email confirmation URL setup
+  - `supabase-fix-name-column.sql` - Fix for old name column
+  - `supabase-debug-policies.sql` - RLS policy debugging queries
+
+### Issues Resolved
+1. ✅ Registration gets stuck at "Creating account..."
+2. ✅ User created in `auth.users` but NOT in `users` table
+3. ✅ RLS policy blocking INSERT operations (error 42501)
+4. ✅ Old `name` column causing NOT NULL constraint errors (error 23502)
+5. ✅ No confirmation email being sent
+6. ✅ Confirmation link shows "requested path is invalid"
+
+### Database Changes
+```sql
+-- RLS Policies Updated
+DROP old/duplicate policies
+CREATE POLICY "Allow user registration" WITH CHECK (true)
+CREATE POLICY "Users can view own profile" USING (auth.uid() = id OR role = 'ADMIN')
+CREATE POLICY "Users can update own profile" USING (auth.uid() = id OR role = 'ADMIN')
+
+-- Schema Cleanup
+ALTER TABLE users DROP COLUMN IF EXISTS name;
+```
+
+### Configuration Required (Supabase Dashboard)
+1. **Authentication** → **URL Configuration**
+   - Site URL: `https://soccer-organizer.vercel.app`
+   - Redirect URLs:
+     - `https://soccer-organizer.vercel.app/**`
+     - `https://soccer-organizer.vercel.app/auth/confirm`
+     - `http://localhost:3000/**` (for local dev)
+     - `http://localhost:3000/auth/confirm` (for local dev)
+
+2. **Run SQL Scripts** (in order):
+   - `supabase-simple-fix.sql` - Fix RLS policies
+   - `ALTER TABLE users DROP COLUMN IF EXISTS name;` - Remove old column
+   - `DELETE FROM auth.users WHERE id NOT IN (SELECT id FROM users);` - Clean orphaned users
+
+### Testing
+- ✅ Registration creates user in both `auth.users` AND `users` table
+- ✅ Success screen displays with email address
+- ✅ Confirmation email sent successfully
+- ⚠️ Email confirmation link needs Redirect URL configuration in Supabase
+- ✅ Detailed error logging helps diagnose issues
+
+### Files Created/Modified
+- `contexts/AuthContext.tsx` - Enhanced error handling and logging
+- `app/register/page.tsx` - Success screen for email confirmation
+- `supabase-simple-fix.sql` - Working RLS policies
+- `supabase-fix-name-column.sql` - Remove old name column
+- `supabase-cleanup-duplicate-policies.sql` - Clean up duplicate policies
+- `SUPABASE-QUICK-FIX.md` - Troubleshooting guide
+- `FIX-EMAIL-CONFIRMATION.md` - Email confirmation setup
+
+---
+
 ## [2025-10-02] - Rename Organizers Table to Users
 
 ### Changed
