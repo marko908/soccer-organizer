@@ -177,10 +177,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
 
         if (insertError) {
-          console.error('Error creating user profile:', insertError)
+          console.error('❌ Error creating user profile:', insertError)
+          console.error('📋 Insert error details:', JSON.stringify(insertError, null, 2))
+          console.error('🔑 User ID:', data.user.id)
+          console.error('📧 Email:', data.user.email)
+          console.error('👤 Nickname:', nickname)
+
+          // Check for specific errors
+          if (insertError.code === '23505') {
+            // Unique constraint violation
+            if (insertError.message.includes('nickname')) {
+              console.error('⚠️ Duplicate nickname:', nickname)
+              alert('Nickname is already taken. Please choose a different nickname.')
+            } else if (insertError.message.includes('email')) {
+              console.error('⚠️ Duplicate email:', data.user.email)
+              alert('Email is already registered.')
+            }
+          } else if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
+            // Permission denied / RLS policy violation
+            console.error('🚨 RLS POLICY ERROR!')
+            console.error('The user table INSERT policy is missing or incorrect.')
+            console.error('👉 SOLUTION: Run supabase-fix-registration-rls.sql in Supabase SQL Editor!')
+            alert('Registration failed: Database permission error.\n\nPlease run the RLS fix script in Supabase.\nCheck the browser console for details.')
+          } else {
+            console.error('❓ Unknown error code:', insertError.code)
+            alert(`Registration failed: ${insertError.message}`)
+          }
+
           return false
         }
 
+        console.log('User profile created successfully for:', data.user.email)
         // Don't fetch profile yet - user needs to verify email first
         return true
       }
