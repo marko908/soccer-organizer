@@ -16,35 +16,61 @@ function ConfirmEmailContent() {
   useEffect(() => {
     const confirmEmail = async () => {
       try {
-        // Get the token from URL (Supabase will handle this automatically)
-        const token_hash = searchParams.get('token_hash')
-        const type = searchParams.get('type')
+        // Check for new PKCE flow (code parameter)
+        const code = searchParams.get('code')
 
-        if (!token_hash || type !== 'email') {
-          setStatus('error')
-          setErrorMessage('Invalid confirmation link')
-          return
-        }
+        if (code) {
+          console.log('📧 Using PKCE flow with code:', code)
 
-        // Supabase automatically handles the token verification
-        const { data, error } = await supabase.auth.verifyOtp({
-          token_hash,
-          type: 'email',
-        })
+          // Exchange the code for a session
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-        if (error) {
-          console.error('Email confirmation error:', error)
-          setStatus('error')
-          setErrorMessage(error.message)
+          if (error) {
+            console.error('❌ Email confirmation error:', error)
+            console.error('❌ Error details:', JSON.stringify(error, null, 2))
+            setStatus('error')
+            setErrorMessage(error.message || 'Confirmation link expired or invalid')
+          } else {
+            console.log('✅ Email confirmed successfully!')
+            console.log('✅ User data:', data)
+            setStatus('success')
+            // Redirect to dashboard after 2 seconds
+            setTimeout(() => {
+              router.push('/dashboard')
+            }, 2000)
+          }
         } else {
-          setStatus('success')
-          // Redirect to dashboard after 3 seconds
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 3000)
+          // Fallback to old token_hash flow
+          const token_hash = searchParams.get('token_hash')
+          const type = searchParams.get('type')
+
+          console.log('📧 Using legacy flow - token_hash:', token_hash, 'type:', type)
+
+          if (!token_hash || !type) {
+            setStatus('error')
+            setErrorMessage('Invalid confirmation link')
+            return
+          }
+
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash,
+            type: type as any,
+          })
+
+          if (error) {
+            console.error('❌ Email confirmation error:', error)
+            setStatus('error')
+            setErrorMessage(error.message)
+          } else {
+            console.log('✅ Email confirmed successfully!')
+            setStatus('success')
+            setTimeout(() => {
+              router.push('/dashboard')
+            }, 2000)
+          }
         }
       } catch (error: any) {
-        console.error('Confirmation error:', error)
+        console.error('❌ Confirmation error:', error)
         setStatus('error')
         setErrorMessage(error.message || 'An error occurred')
       }
