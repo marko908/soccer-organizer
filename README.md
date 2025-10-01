@@ -1,6 +1,6 @@
 # Soccer Organizer MVP
 
-A pay-to-play soccer game organization web application built with Next.js, Prisma, and Stripe.
+A pay-to-play soccer game organization web application built with Next.js, Supabase, and Stripe.
 
 ## Features
 
@@ -14,8 +14,9 @@ A pay-to-play soccer game organization web application built with Next.js, Prism
 - **Frontend**: Next.js 14, React, TypeScript
 - **Styling**: Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Database**: Prisma ORM with SQLite
+- **Database**: Supabase (PostgreSQL)
 - **Payments**: Stripe
+- **Authentication**: JWT with bcrypt
 
 ## Setup Instructions
 
@@ -30,13 +31,18 @@ npm install
 Copy `.env.local.example` to `.env.local` and fill in your values:
 
 ```env
-# Database
-DATABASE_URL="file:./dev.db"
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
 
 # Stripe Keys
 STRIPE_PUBLISHABLE_KEY="pk_test_..."
 STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Authentication
+JWT_SECRET="your-secret-key"
+ADMIN_SETUP_KEY="your-admin-setup-key"
 
 # Next.js URL (for webhooks)
 NEXT_PUBLIC_BASE_URL="http://localhost:3000"
@@ -52,13 +58,11 @@ NEXT_PUBLIC_BASE_URL="http://localhost:3000"
 
 ### 4. Database Setup
 
-```bash
-# Generate Prisma client
-npm run db:generate
-
-# Create and migrate database
-npm run db:push
-```
+1. Create a [Supabase account](https://supabase.com)
+2. Create a new project
+3. Get your project URL and anon key from Settings → API
+4. Add the credentials to your `.env.local` file
+5. Create the database schema using Supabase Dashboard or SQL Editor
 
 ### 5. Run the Application
 
@@ -96,40 +100,70 @@ The application will be available at [http://localhost:3000](http://localhost:30
 ```
 ├── app/
 │   ├── api/
+│   │   ├── admin/           # Admin & organizer management
 │   │   ├── events/          # Event CRUD operations
 │   │   ├── create-checkout/ # Stripe checkout session
 │   │   └── webhook/         # Stripe webhook handler
 │   ├── create/              # Event creation page
+│   ├── dashboard/           # Organizer dashboard
 │   ├── event/[id]/          # Dynamic event display
 │   ├── globals.css          # Global styles
 │   ├── layout.tsx           # Root layout
 │   └── page.tsx             # Homepage
 ├── lib/
-│   ├── prisma.ts           # Prisma client setup
-│   └── stripe.ts           # Stripe client setup
-├── prisma/
-│   └── schema.prisma       # Database schema
-└── README.md
+│   ├── supabase.ts          # Supabase client setup
+│   ├── auth.ts              # Authentication helpers
+│   └── stripe.ts            # Stripe client setup
+├── components/              # React components
+└── contexts/                # React contexts
 ```
 
 ## Database Schema
 
-### Event
+### Organizers
+- `id`: Auto-increment primary key
+- `email`: Organizer email (unique)
+- `password`: Hashed password
+- `name`: Organizer name
+- `phone`: Phone number (optional)
+- `role`: USER_ROLE enum (ADMIN, ORGANIZER)
+- `email_verified`: Boolean
+- `phone_verified`: Boolean
+- `admin_approved`: Boolean
+- `approved_at`: Timestamp
+- `approved_by`: Admin identifier
+- `created_at`: Timestamp
+- `updated_at`: Timestamp
+
+### Events
 - `id`: Auto-increment primary key
 - `name`: Event name
 - `date`: Date and time
 - `location`: Event location
-- `totalCost`: Total cost for the pitch
-- `maxPlayers`: Maximum number of players
-- `pricePerPlayer`: Cost per participant
+- `total_cost`: Total cost for the pitch
+- `max_players`: Maximum number of players
+- `price_per_player`: Cost per participant
+- `organizer_id`: Foreign key to Organizers
+- `created_at`: Timestamp
+- `updated_at`: Timestamp
 
-### Participant
+### Participants
 - `id`: Auto-increment primary key
 - `name`: Participant name
 - `email`: Optional email
-- `paymentStatus`: "pending" | "succeeded" | "failed"
-- `stripePaymentIntentId`: Stripe payment reference
-- `eventId`: Foreign key to Event
+- `payment_status`: "pending" | "succeeded" | "failed"
+- `stripe_payment_intent_id`: Stripe payment reference
+- `event_id`: Foreign key to Events
+- `created_at`: Timestamp
+
+### Email Verifications
+- `id`: Auto-increment primary key
+- `token`: Unique verification token
+- `email`: Email to verify
+- `organizer_id`: Foreign key to Organizers
+- `expires_at`: Expiration timestamp
+- `used_at`: Timestamp when used
+- `created_at`: Timestamp
 
 ## Development Commands
 
@@ -143,11 +177,8 @@ npm run build
 # Start production server
 npm start
 
-# Database commands
-npm run db:generate  # Generate Prisma client
-npm run db:push      # Push schema to database
-npm run db:migrate   # Create migration
-npm run db:studio    # Open Prisma Studio
+# Linting
+npm run lint
 ```
 
 ## Webhook Testing
@@ -162,10 +193,23 @@ This will give you a webhook secret starting with `whsec_` to use in your `.env.
 
 ## Production Deployment
 
-1. Set up your production database (PostgreSQL recommended)
-2. Update `DATABASE_URL` in production environment
-3. Configure production Stripe webhook endpoint
-4. Deploy to your preferred platform (Vercel, Railway, etc.)
+### Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Connect your repository to Vercel
+3. Add environment variables in Vercel dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `STRIPE_PUBLISHABLE_KEY`
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_WEBHOOK_SECRET`
+   - `JWT_SECRET`
+   - `ADMIN_SETUP_KEY`
+   - `NEXT_PUBLIC_BASE_URL`
+4. Configure production Stripe webhook endpoint
+5. Deploy!
+
+Your Supabase database is already production-ready and will be used automatically.
 
 ## License
 

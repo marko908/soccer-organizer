@@ -3,17 +3,13 @@
     "allow": [
       "Bash(npm install)",
       "Bash(npm run:*)",
-      "Bash(npx prisma db push:*)",
       "Bash(git init:*)",
       "Bash(git commit:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(npm install:*)",
-      "Bash(npx prisma generate:*)",
-      "Bash(start http://localhost:3005)",
-      "Bash(start http://localhost:3006)",
       "Bash(npm uninstall:*)",
-      "Bash(start http://localhost:3007)"
+      "Bash(start http://localhost:*)"
     ],
     "deny": [],
     "ask": []
