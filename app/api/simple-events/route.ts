@@ -31,20 +31,29 @@ export async function GET(request: NextRequest) {
     const result = await client.query(
       `SELECT
         e.*,
-        COUNT(CASE WHEN p."paymentStatus" = 'succeeded' THEN 1 END) as "paidParticipants"
+        COUNT(CASE WHEN p.payment_status = 'succeeded' THEN 1 END) as paid_participants
       FROM events e
-      LEFT JOIN participants p ON e.id = p."eventId"
-      WHERE e."organizerId" = $1
+      LEFT JOIN participants p ON e.id = p.event_id
+      WHERE e.organizer_id = $1
       GROUP BY e.id
-      ORDER BY e."createdAt" DESC`,
+      ORDER BY e.created_at DESC`,
       [organizerId]
     )
 
     await client.end()
 
     const events = result.rows.map((event: any) => ({
-      ...event,
-      paidParticipants: parseInt(event.paidParticipants) || 0
+      id: event.id,
+      name: event.name,
+      date: event.date,
+      location: event.location,
+      totalCost: parseFloat(event.total_cost),
+      maxPlayers: event.max_players,
+      pricePerPlayer: parseFloat(event.price_per_player),
+      organizerId: event.organizer_id,
+      createdAt: event.created_at,
+      updatedAt: event.updated_at,
+      paidParticipants: parseInt(event.paid_participants) || 0
     }))
 
     console.log('Query result rows:', result.rows.length)
@@ -91,15 +100,27 @@ export async function POST(request: NextRequest) {
     await client.connect()
 
     const result = await client.query(
-      `INSERT INTO events (name, date, location, "totalCost", "maxPlayers", "pricePerPlayer", "organizerId", "createdAt", "updatedAt")
+      `INSERT INTO events (name, date, location, total_cost, max_players, price_per_player, organizer_id, created_at, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-       RETURNING id, name, date, location, "totalCost", "maxPlayers", "pricePerPlayer"`,
+       RETURNING id, name, date, location, total_cost, max_players, price_per_player, organizer_id, created_at, updated_at`,
       [name, date, location, totalCost, maxPlayers, pricePerPlayer, organizerId]
     )
 
     await client.end()
 
-    const event = result.rows[0]
+    const rawEvent = result.rows[0]
+    const event = {
+      id: rawEvent.id,
+      name: rawEvent.name,
+      date: rawEvent.date,
+      location: rawEvent.location,
+      totalCost: parseFloat(rawEvent.total_cost),
+      maxPlayers: rawEvent.max_players,
+      pricePerPlayer: parseFloat(rawEvent.price_per_player),
+      organizerId: rawEvent.organizer_id,
+      createdAt: rawEvent.created_at,
+      updatedAt: rawEvent.updated_at
+    }
 
     return NextResponse.json({ event })
   } catch (error: any) {
