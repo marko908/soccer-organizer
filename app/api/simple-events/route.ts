@@ -17,50 +17,48 @@ export async function GET(request: NextRequest) {
 
     const organizerId = session.user.id
 
-    console.log('Session user:', session.user.id)
-    console.log('Looking for events with organizerId:', organizerId)
+    console.log('Fetching events for organizer:', organizerId)
 
-    // Direct SQL query
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
+    // Get events for this organizer using Supabase client
+    const { data: eventsData, error: eventsError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('organizer_id', organizerId)
+      .order('created_at', { ascending: false })
 
-    await client.connect()
+    if (eventsError) {
+      console.error('Error fetching events:', eventsError)
+      throw eventsError
+    }
 
-    const result = await client.query(
-      `SELECT
-        e.*,
-        COUNT(CASE WHEN p.payment_status = 'succeeded' THEN 1 END) as paid_participants
-      FROM events e
-      LEFT JOIN participants p ON e.id = p.event_id
-      WHERE e.organizer_id = $1
-      GROUP BY e.id
-      ORDER BY e.created_at DESC`,
-      [organizerId]
+    // For each event, count paid participants
+    const eventsWithParticipants = await Promise.all(
+      (eventsData || []).map(async (event) => {
+        const { count } = await supabase
+          .from('participants')
+          .select('*', { count: 'exact', head: true })
+          .eq('event_id', event.id)
+          .eq('payment_status', 'succeeded')
+
+        return {
+          id: event.id,
+          name: event.name,
+          date: event.date,
+          location: event.location,
+          totalCost: parseFloat(event.total_cost),
+          maxPlayers: event.max_players,
+          pricePerPlayer: parseFloat(event.price_per_player),
+          organizerId: event.organizer_id,
+          createdAt: event.created_at,
+          updatedAt: event.updated_at,
+          paidParticipants: count || 0
+        }
+      })
     )
 
-    await client.end()
+    console.log('Events found:', eventsWithParticipants.length)
 
-    const events = result.rows.map((event: any) => ({
-      id: event.id,
-      name: event.name,
-      date: event.date,
-      location: event.location,
-      totalCost: parseFloat(event.total_cost),
-      maxPlayers: event.max_players,
-      pricePerPlayer: parseFloat(event.price_per_player),
-      organizerId: event.organizer_id,
-      createdAt: event.created_at,
-      updatedAt: event.updated_at,
-      paidParticipants: parseInt(event.paid_participants) || 0
-    }))
-
-    console.log('Query result rows:', result.rows.length)
-    console.log('Events found:', events)
-
-    return NextResponse.json({ events })
+    return NextResponse.json({ events: eventsWithParticipants })
   } catch (error: any) {
     console.error('Get events error:', error)
     return NextResponse.json(
@@ -89,42 +87,55 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, date, location, totalCost, maxPlayers } = body
 
+    // Validate input
+    if (!name || !date || !location || !totalCost || !maxPlayers) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
     // Calculate price per player
     const pricePerPlayer = totalCost / maxPlayers
 
-    // Direct SQL insert
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
+    console.log('Creating event for organizer:', organizerId)
 
-    await client.connect()
+    // Insert event using Supabase client
+    const { data: event, error: insertError } = await supabase
+      .from('events')
+      .insert({
+        name,
+        date,
+        location,
+        total_cost: totalCost,
+        max_players: maxPlayers,
+        price_per_player: pricePerPlayer,
+        organizer_id: organizerId,
+      })
+      .select()
+      .single()
 
-    const result = await client.query(
-      `INSERT INTO events (name, date, location, total_cost, max_players, price_per_player, organizer_id, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-       RETURNING id, name, date, location, total_cost, max_players, price_per_player, organizer_id, created_at, updated_at`,
-      [name, date, location, totalCost, maxPlayers, pricePerPlayer, organizerId]
-    )
-
-    await client.end()
-
-    const rawEvent = result.rows[0]
-    const event = {
-      id: rawEvent.id,
-      name: rawEvent.name,
-      date: rawEvent.date,
-      location: rawEvent.location,
-      totalCost: parseFloat(rawEvent.total_cost),
-      maxPlayers: rawEvent.max_players,
-      pricePerPlayer: parseFloat(rawEvent.price_per_player),
-      organizerId: rawEvent.organizer_id,
-      createdAt: rawEvent.created_at,
-      updatedAt: rawEvent.updated_at
+    if (insertError) {
+      console.error('Error creating event:', insertError)
+      throw insertError
     }
 
-    return NextResponse.json({ event })
+    const formattedEvent = {
+      id: event.id,
+      name: event.name,
+      date: event.date,
+      location: event.location,
+      totalCost: parseFloat(event.total_cost),
+      maxPlayers: event.max_players,
+      pricePerPlayer: parseFloat(event.price_per_player),
+      organizerId: event.organizer_id,
+      createdAt: event.created_at,
+      updatedAt: event.updated_at
+    }
+
+    console.log('Event created:', formattedEvent.id)
+
+    return NextResponse.json({ event: formattedEvent })
   } catch (error: any) {
     console.error('Create event error:', error)
     return NextResponse.json(
