@@ -10,7 +10,8 @@
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
       "Bash(start http://localhost:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

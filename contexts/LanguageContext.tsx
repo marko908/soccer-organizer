@@ -125,6 +125,15 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.loading': 'Ładowanie...',
     'auth.loginFailed': 'Logowanie nieudane. Spróbuj ponownie.',
     'auth.registerFailed': 'Rejestracja nieudana. Spróbuj ponownie.',
+    'auth.confirmEmail.verifying': 'Weryfikacja adresu email...',
+    'auth.confirmEmail.pleaseWait': 'Proszę czekać, weryfikujemy Twoje konto.',
+    'auth.confirmEmail.success': 'Email zweryfikowany!',
+    'auth.confirmEmail.successMessage': 'Twoje konto zostało pomyślnie zweryfikowane. Możesz teraz korzystać ze wszystkich funkcji.',
+    'auth.confirmEmail.error': 'Błąd weryfikacji',
+    'auth.confirmEmail.errorMessage': 'Link weryfikacyjny jest nieprawidłowy lub wygasł.',
+    'auth.confirmEmail.redirecting': 'Za chwilę zostaniesz przekierowany do panelu...',
+    'auth.confirmEmail.goToDashboard': 'Przejdź do panelu',
+    'auth.confirmEmail.backToLogin': 'Wróć do logowania',
 
     // Dashboard
     'dashboard.title': 'Panel',
@@ -296,6 +305,15 @@ const translations: Record<Language, Record<string, string>> = {
     'auth.loading': 'Loading...',
     'auth.loginFailed': 'Login failed. Please try again.',
     'auth.registerFailed': 'Registration failed. Please try again.',
+    'auth.confirmEmail.verifying': 'Verifying your email...',
+    'auth.confirmEmail.pleaseWait': 'Please wait while we verify your account.',
+    'auth.confirmEmail.success': 'Email Verified!',
+    'auth.confirmEmail.successMessage': 'Your account has been successfully verified. You can now access all features.',
+    'auth.confirmEmail.error': 'Verification Error',
+    'auth.confirmEmail.errorMessage': 'The verification link is invalid or has expired.',
+    'auth.confirmEmail.redirecting': 'Redirecting you to dashboard...',
+    'auth.confirmEmail.goToDashboard': 'Go to Dashboard',
+    'auth.confirmEmail.backToLogin': 'Back to Login',
 
     // Dashboard
     'dashboard.title': 'Organizer Dashboard',
