@@ -41,9 +41,9 @@ export async function POST(request: NextRequest) {
         name,
         phone: phone || null,
         role: 'ORGANIZER',
-        emailVerified: false,
-        phoneVerified: false,
-        adminApproved: false
+        email_verified: false,
+        phone_verified: false,
+        admin_approved: false
       })
       .select('id, email, name, role')
       .single()
@@ -63,7 +63,6 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' }
     )
 
-    // Set cookie
     const response = NextResponse.json({
       user: {
         id: user.id,
@@ -74,12 +73,17 @@ export async function POST(request: NextRequest) {
       token
     })
 
-    response.cookies.set('token', token, {
+    // Set both cookie names for compatibility
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    })
+      sameSite: 'strict' as const,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    }
+
+    response.cookies.set('token', token, cookieOptions)
+    response.cookies.set('auth-token', token, cookieOptions)
 
     return response
   } catch (error: any) {

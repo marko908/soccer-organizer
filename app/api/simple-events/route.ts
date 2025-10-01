@@ -3,8 +3,8 @@ import jwt from 'jsonwebtoken'
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from JWT token
-    const token = request.cookies.get('auth-token')?.value
+    // Get user from JWT token (check both cookie names for compatibility)
+    const token = request.cookies.get('auth-token')?.value || request.cookies.get('token')?.value
 
     if (!token) {
       return NextResponse.json(
@@ -71,8 +71,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Get user from JWT token
-    const token = request.cookies.get('auth-token')?.value
+    // Get user from JWT token (check both cookie names for compatibility)
+    const token = request.cookies.get('auth-token')?.value || request.cookies.get('token')?.value
 
     if (!token) {
       return NextResponse.json(

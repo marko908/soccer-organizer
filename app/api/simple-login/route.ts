@@ -25,13 +25,17 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ user, token })
 
-    response.cookies.set('token', token, {
+    // Set both cookie names for compatibility
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'strict' as const,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
-    })
+    }
+
+    response.cookies.set('token', token, cookieOptions)
+    response.cookies.set('auth-token', token, cookieOptions)
 
     return response
   } catch (error) {
