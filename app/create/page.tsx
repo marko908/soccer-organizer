@@ -77,7 +77,7 @@ export default function CreateEvent() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="card">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Soccer Event</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Event</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -90,7 +90,7 @@ export default function CreateEvent() {
               name="name"
               required
               className="input"
-              placeholder="e.g., Friday Soccer at Orlik"
+              placeholder="e.g., Friday 6PM - Orlik Mokotow"
               value={formData.name}
               onChange={handleChange}
             />
