@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 export async function GET(
   request: NextRequest,
@@ -6,29 +7,17 @@ export async function GET(
 ) {
   try {
     const eventId = parseInt(params.id)
+    const supabase = await createServerSupabaseClient()
 
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
+    // Get event
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
 
-    await client.connect()
-
-    // Get event with participant count
-    const eventResult = await client.query(
-      `SELECT
-        e.*,
-        COUNT(CASE WHEN p."paymentStatus" = 'succeeded' THEN 1 END) as "paidParticipants"
-      FROM events e
-      LEFT JOIN participants p ON e.id = p."eventId"
-      WHERE e.id = $1
-      GROUP BY e.id`,
-      [eventId]
-    )
-
-    if (eventResult.rows.length === 0) {
-      await client.end()
+    if (eventError || !event) {
+      console.error('Event not found:', eventId, eventError)
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
@@ -36,28 +25,50 @@ export async function GET(
     }
 
     // Get all participants for this event
-    const participantsResult = await client.query(
-      `SELECT id, name, email, "paymentStatus", "createdAt"
-       FROM participants
-       WHERE "eventId" = $1
-       ORDER BY "createdAt" DESC`,
-      [eventId]
-    )
+    const { data: participants, error: participantsError } = await supabase
+      .from('participants')
+      .select('id, name, email, payment_status, created_at')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
 
-    await client.end()
-
-    const eventData = eventResult.rows[0]
-    const paidParticipants = parseInt(eventData.paidParticipants) || 0
-
-    const event = {
-      ...eventData,
-      paidParticipants,
-      participants: participantsResult.rows,
-      collectedAmount: paidParticipants * eventData.pricePerPlayer,
-      availableSpots: eventData.maxPlayers - paidParticipants
+    if (participantsError) {
+      console.error('Error fetching participants:', participantsError)
     }
 
-    return NextResponse.json(event)
+    // Count paid participants
+    const { count: paidCount } = await supabase
+      .from('participants')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .eq('payment_status', 'succeeded')
+
+    const paidParticipants = paidCount || 0
+
+    // Format response
+    const formattedEvent = {
+      id: event.id,
+      name: event.name,
+      date: event.date,
+      location: event.location,
+      totalCost: parseFloat(event.total_cost),
+      maxPlayers: event.max_players,
+      pricePerPlayer: parseFloat(event.price_per_player),
+      organizerId: event.organizer_id,
+      createdAt: event.created_at,
+      updatedAt: event.updated_at,
+      paidParticipants,
+      participants: (participants || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        paymentStatus: p.payment_status,
+        createdAt: p.created_at,
+      })),
+      collectedAmount: paidParticipants * parseFloat(event.price_per_player),
+      availableSpots: event.max_players - paidParticipants,
+    }
+
+    return NextResponse.json(formattedEvent)
   } catch (error: any) {
     console.error('Get event error:', error)
     return NextResponse.json(
