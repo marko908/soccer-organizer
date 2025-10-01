@@ -51,7 +51,7 @@ export async function createOrganizer(email: string, password: string, name: str
   const hashedPassword = await hashPassword(password)
 
   const { data, error } = await supabase
-    .from('organizers')
+    .from('users')
     .insert({
       email,
       password: hashedPassword,
@@ -66,7 +66,7 @@ export async function createOrganizer(email: string, password: string, name: str
 
 export async function authenticateOrganizer(email: string, password: string): Promise<AuthUser | null> {
   const { data: organizer, error } = await supabase
-    .from('organizers')
+    .from('users')
     .select('*')
     .eq('email', email)
     .single()

@@ -128,7 +128,7 @@ Use `supabase` or `createServerSupabaseClient()` (anon key) for:
 - Verify `app/api/webhook/route.ts` uses `supabaseAdmin` not `supabase`
 
 ### Users can't create events
-- Check if user's `email_verified = true` and `admin_approved = true` in organizers table
+- Check if user's `email_verified = true` and `admin_approved = true` in users table
 - RLS policy requires both conditions to be met
 
 ## Testing RLS

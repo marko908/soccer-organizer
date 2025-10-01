@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       // Approve organizer
       try {
         const { data, error } = await supabaseAdmin
-          .from('organizers')
+          .from('users')
           .update({
             admin_approved: true,
             approved_at: new Date().toISOString(),
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       // Reject organizer (delete from database)
       try {
         const { data, error } = await supabaseAdmin
-          .from('organizers')
+          .from('users')
           .delete()
           .eq('id', organizerId)
           .eq('admin_approved', false)

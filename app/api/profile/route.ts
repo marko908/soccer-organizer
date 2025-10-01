@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     // Get profile
     const { data: profile, error: profileError } = await supabase
-      .from('organizers')
+      .from('users')
       .select('*')
       .eq('id', user.id)
       .single()
@@ -80,7 +80,7 @@ export async function PATCH(request: NextRequest) {
 
     // Get current profile to check nickname change restriction
     const { data: currentProfile } = await supabase
-      .from('organizers')
+      .from('users')
       .select('nickname, nickname_last_changed')
       .eq('id', user.id)
       .single()
@@ -106,7 +106,7 @@ export async function PATCH(request: NextRequest) {
 
       // Check if nickname is unique (case-insensitive)
       const { data: existingUser } = await supabase
-        .from('organizers')
+        .from('users')
         .select('id')
         .ilike('nickname', nickname)
         .neq('id', user.id)
@@ -132,7 +132,7 @@ export async function PATCH(request: NextRequest) {
 
     // Update profile
     const { data: updatedProfile, error: updateError } = await supabase
-      .from('organizers')
+      .from('users')
       .update(updateData)
       .eq('id', user.id)
       .select()

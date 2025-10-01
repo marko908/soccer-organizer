@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check if admin already exists
     const { data: existingAdmin } = await supabase
-      .from('organizers')
+      .from('users')
       .select('id')
       .eq('role', 'ADMIN')
       .single()
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Create admin user
     const { data: admin, error } = await supabase
-      .from('organizers')
+      .from('users')
       .insert({
         email,
         password: hashedPassword,

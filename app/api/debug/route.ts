@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     // Test database connection
     const { count: organizerCount, error } = await supabase
-      .from('organizers')
+      .from('users')
       .select('*', { count: 'exact', head: true })
 
     if (error) throw error
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Test user creation
     const { data: user, error } = await supabase
-      .from('organizers')
+      .from('users')
       .insert({
         email,
         password: 'test-hash',

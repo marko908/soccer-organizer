@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const { data: existingUser } = await supabase
-      .from('organizers')
+      .from('users')
       .select('*')
       .eq('email', email)
       .single()
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Create user
     const { data: user, error } = await supabase
-      .from('organizers')
+      .from('users')
       .insert({
         email,
         password: hashedPassword,

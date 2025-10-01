@@ -52,7 +52,7 @@ export async function authenticateOrganizer(email: string, password: string): Pr
   console.log('Authenticating organizer:', email)
 
   const { data: organizer, error } = await supabase
-    .from('organizers')
+    .from('users')
     .select('id, email, name, password, role')
     .eq('email', email)
     .single()

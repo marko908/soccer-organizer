@@ -49,28 +49,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const fetchUserProfile = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from('organizers')
-      .select('full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
-      .eq('id', userId)
-      .single()
+    try {
+      const { data: profile, error } = await supabase
+        .from('users')
+        .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
+        .eq('id', userId)
+        .single()
 
-    const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (error) {
+        console.error('Error fetching profile:', error)
+        return
+      }
 
-    if (authUser && profile) {
-      setUser({
-        id: authUser.id,
-        email: authUser.email!,
-        fullName: profile.full_name,
-        nickname: profile.nickname,
-        role: (profile.role || 'USER') as 'ADMIN' | 'USER',
-        avatarUrl: profile.avatar_url || '/default-avatar.svg',
-        bio: profile.bio,
-        age: profile.age,
-        weight: profile.weight,
-        height: profile.height,
-        canCreateEvents: profile.can_create_events || false,
-      })
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+
+      if (authUser && profile) {
+        setUser({
+          id: authUser.id,
+          email: profile.email || authUser.email!,
+          fullName: profile.full_name || '',
+          nickname: profile.nickname || '',
+          role: (profile.role || 'USER') as 'ADMIN' | 'USER',
+          avatarUrl: profile.avatar_url || '/default-avatar.svg',
+          bio: profile.bio,
+          age: profile.age,
+          weight: profile.weight,
+          height: profile.height,
+          canCreateEvents: profile.can_create_events || false,
+        })
+      }
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error)
     }
   }
 
@@ -96,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!emailOrNickname.includes('@')) {
         // Lookup email by nickname
         const { data: profile, error: lookupError } = await supabase
-          .from('organizers')
+          .from('users')
           .select('email')
           .ilike('nickname', emailOrNickname)
           .single()
@@ -153,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.user) {
         // Create user profile
-        await supabase.from('organizers').insert({
+        await supabase.from('users').insert({
           id: data.user.id,
           email: data.user.email!,
           full_name: fullName,

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Mark email as verified
     const { error: updateOrgError } = await supabase
-      .from('organizers')
+      .from('users')
       .update({ email_verified: true })
       .eq('id', verification.organizer_id)
 

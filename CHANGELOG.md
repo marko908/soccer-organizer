@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02] - Rename Organizers Table to Users
+
+### Changed
+- **Database Schema** (`supabase-rename-organizers-to-users.sql`)
+  - Renamed `organizers` table to `users` for clarity
+  - Updated all foreign key constraints
+  - Updated all RLS policies to reference `users` table
+  - Renamed indexes: `organizers_pkey` → `users_pkey`, `organizers_email_key` → `users_email_key`, `organizers_nickname_unique` → `users_nickname_unique`
+  - Updated helper functions: `is_admin()`, `is_approved_organizer()` to use `users` table
+
+- **API Routes & Code**
+  - Updated all Supabase queries from `.from('organizers')` to `.from('users')`
+  - Updated 17 TypeScript files across the codebase
+  - AuthContext, all API routes, and utility functions now reference `users` table
+
+- **Documentation**
+  - Updated README.md, CHANGELOG.md, and other docs to use "users table" terminology
+  - Migration guide provided in `supabase-rename-organizers-to-users.sql`
+
+### Migration Notes
+To apply this change:
+1. Run `supabase-rename-organizers-to-users.sql` in Supabase SQL Editor
+2. All data is preserved - this is a table rename only
+3. No code changes required on the frontend (already updated)
+
+---
+
 ## [2025-10-02] - User Profile & Permission System Redesign
 
 ### Added

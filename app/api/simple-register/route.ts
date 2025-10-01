@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Create organizer profile in our custom table
     const { error: profileError } = await supabase
-      .from('organizers')
+      .from('users')
       .insert({
         id: authData.user.id, // Use auth user ID
         email: authData.user.email!,

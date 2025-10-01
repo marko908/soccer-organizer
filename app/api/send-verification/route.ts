@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     // Check if organizer exists
     const { data: organizer, error: orgError } = await supabase
-      .from('organizers')
+      .from('users')
       .select('id, email_verified')
       .eq('email', email)
       .single()

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Get all organizers waiting for approval
     const { data: organizers, error } = await supabase
-      .from('organizers')
+      .from('users')
       .select('id, name, email, phone, email_verified, admin_approved, created_at')
       .eq('admin_approved', false)
       .order('created_at', { ascending: false })

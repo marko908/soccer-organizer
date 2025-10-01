@@ -12,7 +12,9 @@
       "Bash(start http://localhost:*)",
       "Bash(node:*)",
       "Bash(cat:*)",
-      "Bash(timeout 30 npm run dev)"
+      "Bash(timeout 30 npm run dev)",
+      "Bash(git log:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user is admin
     const { data: profile } = await supabase
-      .from('organizers')
+      .from('users')
       .select('role')
       .eq('id', user.id)
       .single()
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Update permission using admin client (bypasses RLS)
     const { data: updatedUser, error: updateError } = await supabaseAdmin
-      .from('organizers')
+      .from('users')
       .update({ can_create_events: canCreateEvents })
       .eq('id', userId)
       .select('id, email, full_name, nickname, role, can_create_events, email_verified, created_at')

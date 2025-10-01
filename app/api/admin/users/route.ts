@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     // Check if user is admin
     const { data: profile } = await supabase
-      .from('organizers')
+      .from('users')
       .select('role')
       .eq('id', user.id)
       .single()
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     // Build query
     let query = supabase
-      .from('organizers')
+      .from('users')
       .select('id, email, full_name, nickname, role, can_create_events, email_verified, created_at')
       .order('created_at', { ascending: false })
 
