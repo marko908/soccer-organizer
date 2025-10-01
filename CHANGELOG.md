@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-01] - Update Documentation
+
+### Changed
+- **README.md** - Updated to reflect current architecture
+  - Authentication: Changed from "JWT with bcrypt" to "Supabase Auth (SSR with cookie-based sessions)"
+  - Added Security section with Row Level Security
+  - Updated environment variables (removed JWT_SECRET, added SUPABASE_SERVICE_ROLE_KEY)
+  - Updated database schema with UUID primary keys and RLS policies
+  - Updated file structure to include middleware and RLS files
+  - Added security checklist for deployment
+
+---
+
 ## [2025-10-01] - Row Level Security (RLS) Implementation
 
 ### Added
