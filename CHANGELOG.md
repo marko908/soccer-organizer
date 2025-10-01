@@ -11,6 +11,130 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-01] - Row Level Security (RLS) Implementation
+
+### Added
+- **supabase-rls-policies.sql** - Comprehensive RLS policies for all tables
+  - Organizers: Users can view/update own profile, admins can view/update all
+  - Events: Public viewing, only approved organizers can create events
+  - Participants: Public viewing, anyone can join, organizers can remove participants
+  - Helper functions: `is_admin()`, `is_approved_organizer()`
+- **lib/supabase-admin.ts** - Admin Supabase client with service_role key
+  - Bypasses RLS for privileged operations
+  - Used for Stripe webhooks and admin operations
+- **RLS-SETUP.md** - Complete setup guide for Row Level Security
+
+### Changed
+- **app/api/webhook/route.ts** - Use `supabaseAdmin` for payment status updates
+- **app/api/admin/approve-organizer/route.ts** - Use `supabaseAdmin` for admin operations
+- **contexts/AuthContext.tsx** - Improved logout with global scope and forced page reload
+- **middleware.ts** - Use `cookies.delete()` instead of setting empty value for proper cookie removal
+
+### Fixed
+- **Logout bug** - Buttons no longer disappear after logout and refresh
+  - Now uses `signOut({ scope: 'global' })` to clear all sessions
+  - Forces page reload to clear cached state
+  - Properly deletes cookies instead of setting empty values
+
+### Security
+- Enabled Row Level Security on all tables (organizers, events, participants)
+- Only approved organizers can create events
+- Users can only modify their own data (except admins)
+- Stripe webhooks bypass RLS using service_role key
+- Admin operations use elevated privileges via service_role key
+
+---
+
+## [2025-10-01] - Supabase SSR Authentication Fix
+
+### Added
+- **Supabase SSR Middleware** - `middleware.ts` for proper session synchronization
+  - Automatically syncs Supabase sessions between localStorage (client) and cookies (server)
+  - Runs on every request to maintain session state
+  - Enables server-side authentication verification
+- **@supabase/ssr** package for proper SSR support
+- Email confirmation page at `/auth/confirm`
+  - Custom success/error states
+  - Auto-redirect to dashboard after verification
+  - Polish and English translations
+
+### Changed
+- **lib/supabase.ts** - Updated to use `createBrowserClient` from `@supabase/ssr`
+- **lib/supabase-server.ts** - Updated to use `createServerClient` from `@supabase/ssr`
+  - Proper cookie handling with get/set/remove methods
+  - Error handling for Server Component restrictions
+- **app/create/page.tsx** - Added `credentials: 'include'` to fetch requests
+
+### Fixed
+- **"Unauthorized" error when creating events** - Sessions now properly sync via cookies
+- **Logout functionality** - Now properly clears Supabase session
+- **Session persistence** - Sessions persist correctly across page reloads
+- **Disappearing buttons after logout** - Fixed by proper session cleanup
+
+---
+
+## [2025-10-01] - Migrate API Endpoints to Supabase Client
+
+### Changed
+- **app/api/simple-events/route.ts**
+  - GET: Migrated from direct PostgreSQL to Supabase client
+  - POST: Migrated from direct PostgreSQL to Supabase client
+  - Removed dependency on `DATABASE_URL` environment variable
+  - Uses Supabase `.from()` queries with proper field mapping
+- **app/api/simple-event/[id]/route.ts**
+  - Migrated from direct PostgreSQL to Supabase client
+  - Proper snake_case to camelCase field mapping
+  - Fixed participant counting with Supabase queries
+
+### Fixed
+- **Event creation failure** - Events now create successfully
+- **"Event Not Found" error** - Event detail pages now load correctly
+- **Database connection issues** - No longer requires DATABASE_URL
+
+### Security
+- Removed direct database credentials from application
+- Using Supabase anon key with Row Level Security (RLS) ready
+
+---
+
+## [2025-10-01] - Migrate to Supabase Auth
+
+### Added
+- **Supabase Authentication System**
+  - Users stored in `auth.users` table (managed by Supabase)
+  - Custom profile data in `organizers` table
+  - Email verification with confirmation emails
+  - Automatic password hashing and validation
+
+### Changed
+- **Authentication Flow**
+  - Login: `supabase.auth.signInWithPassword()` instead of manual JWT
+  - Register: `supabase.auth.signUp()` instead of manual bcrypt
+  - Session management: Supabase sessions instead of JWT tokens
+- **User ID Type**: Changed from `number` (integer) to `string` (UUID)
+  - Updated all interfaces and type definitions
+  - Updated database schema: `organizers.id` is now UUID
+- **Database Schema Migration**
+  - Dropped and recreated `organizers`, `events`, `participants` tables
+  - `organizers.id` references `auth.users(id)` with CASCADE delete
+  - `events.organizer_id` is now UUID type
+- **contexts/AuthContext.tsx**
+  - Uses Supabase client directly for auth operations
+  - Real-time auth state listener with `onAuthStateChange`
+  - Automatic session refresh
+
+### Removed
+- Manual JWT token generation and verification
+- bcryptjs password hashing (handled by Supabase)
+- Custom authentication cookies (using Supabase session cookies)
+
+### Security
+- More secure with Supabase's built-in security features
+- OAuth support ready for future expansion
+- Better session management with httpOnly cookies
+
+---
+
 ## [2025-10-01] - Rebrand to Foothub
 
 ### Changed

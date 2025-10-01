@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { getAuthUser } from '@/lib/simple-auth'
 
 export async function POST(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (action === 'approve') {
       // Approve organizer
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
           .from('organizers')
           .update({
             admin_approved: true,
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Reject organizer (delete from database)
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
           .from('organizers')
           .delete()
           .eq('id', organizerId)

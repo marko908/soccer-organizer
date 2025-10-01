@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { headers } from 'next/headers'
 
 export async function POST(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     try {
       const { eventId, participantName, participantEmail } = session.metadata
 
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('participants')
         .insert({
           name: participantName,

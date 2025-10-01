@@ -142,8 +142,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut()
+      // Sign out with scope: 'local' clears the session from current tab
+      // scope: 'global' clears from all tabs (default)
+      await supabase.auth.signOut({ scope: 'global' })
       setUser(null)
+
+      // Force a page reload to clear any cached state
+      window.location.href = '/'
     } catch (error) {
       console.error('Logout failed:', error)
     }
