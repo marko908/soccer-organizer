@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { formatCurrency, formatDateTime } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import Image from 'next/image'
 
 interface Participant {
   id: number
   name: string
   email?: string
+  avatarUrl?: string
 }
 
 interface Event {
@@ -38,6 +40,33 @@ export default function EventPage() {
     email: ''
   })
   const [showPaymentForm, setShowPaymentForm] = useState(false)
+  const [nameDisplayOption, setNameDisplayOption] = useState<'fullName' | 'nickname' | 'both'>('fullName')
+
+  // Auto-fill name when user is logged in
+  useEffect(() => {
+    if (user) {
+      setParticipantData(prev => ({
+        ...prev,
+        name: getDisplayName(),
+        email: prev.email || user.email
+      }))
+    }
+  }, [user, nameDisplayOption])
+
+  const getDisplayName = () => {
+    if (!user) return ''
+
+    switch (nameDisplayOption) {
+      case 'fullName':
+        return user.fullName
+      case 'nickname':
+        return user.nickname
+      case 'both':
+        return `${user.fullName} (@${user.nickname})`
+      default:
+        return user.fullName
+    }
+  }
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
@@ -80,6 +109,8 @@ export default function EventPage() {
           eventId: params.id,
           participantName: participantData.name.trim(),
           participantEmail: participantData.email.trim() || null,
+          userId: user?.id || null,
+          avatarUrl: user?.avatarUrl || '/default-avatar.svg',
         }),
       })
 
@@ -211,8 +242,16 @@ export default function EventPage() {
                   key={participant.id}
                   className="participant-card"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-4 shadow-sm">
-                    {index + 1}
+                  <div className="flex-shrink-0 mr-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                      <Image
+                        src={participant.avatarUrl || '/default-avatar.svg'}
+                        alt={participant.name}
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                      />
+                    </div>
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-gray-900">{participant.name}</div>
@@ -250,6 +289,49 @@ export default function EventPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {user && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Display Name As
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="nameDisplay"
+                            value="fullName"
+                            checked={nameDisplayOption === 'fullName'}
+                            onChange={(e) => setNameDisplayOption(e.target.value as 'fullName')}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700">{user.fullName}</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="nameDisplay"
+                            value="nickname"
+                            checked={nameDisplayOption === 'nickname'}
+                            onChange={(e) => setNameDisplayOption(e.target.value as 'nickname')}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700">@{user.nickname}</span>
+                        </label>
+                        <label className="flex items-center">
+                          <input
+                            type="radio"
+                            name="nameDisplay"
+                            value="both"
+                            checked={nameDisplayOption === 'both'}
+                            onChange={(e) => setNameDisplayOption(e.target.value as 'both')}
+                            className="mr-2"
+                          />
+                          <span className="text-sm text-gray-700">{user.fullName} (@{user.nickname})</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                       Your Name *
@@ -265,7 +347,13 @@ export default function EventPage() {
                         ...prev,
                         name: e.target.value
                       }))}
+                      disabled={!!user}
                     />
+                    {user && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Auto-filled from your profile. Select a different display option above to change.
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -282,7 +370,13 @@ export default function EventPage() {
                         ...prev,
                         email: e.target.value
                       }))}
+                      disabled={!!user}
                     />
+                    {user && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Auto-filled from your profile.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex gap-2">

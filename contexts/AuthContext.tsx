@@ -6,15 +6,22 @@ import { supabase } from '@/lib/supabase'
 interface User {
   id: string
   email: string
-  name: string
-  role: 'ADMIN' | 'ORGANIZER'
+  fullName: string
+  nickname: string
+  role: 'ADMIN' | 'USER'
+  avatarUrl: string
+  bio?: string
+  age?: number
+  weight?: number
+  height?: number
+  canCreateEvents: boolean
 }
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (email: string, password: string, name: string, phone?: string) => Promise<boolean>
+  login: (emailOrNickname: string, password: string) => Promise<boolean>
+  register: (email: string, password: string, fullName: string, nickname: string, phone?: string) => Promise<boolean>
   logout: () => Promise<void>
 }
 
@@ -44,18 +51,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     const { data: profile } = await supabase
       .from('organizers')
-      .select('name, role')
+      .select('full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
       .eq('id', userId)
       .single()
 
     const { data: { user: authUser } } = await supabase.auth.getUser()
 
-    if (authUser) {
+    if (authUser && profile) {
       setUser({
         id: authUser.id,
         email: authUser.email!,
-        name: profile?.name || authUser.user_metadata?.name || 'User',
-        role: (profile?.role || 'ORGANIZER') as 'ADMIN' | 'ORGANIZER',
+        fullName: profile.full_name,
+        nickname: profile.nickname,
+        role: (profile.role || 'USER') as 'ADMIN' | 'USER',
+        avatarUrl: profile.avatar_url || '/default-avatar.svg',
+        bio: profile.bio,
+        age: profile.age,
+        weight: profile.weight,
+        height: profile.height,
+        canCreateEvents: profile.can_create_events || false,
       })
     }
   }
@@ -74,8 +88,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (emailOrNickname: string, password: string): Promise<boolean> => {
     try {
+      let email = emailOrNickname
+
+      // Check if input is a nickname (doesn't contain @)
+      if (!emailOrNickname.includes('@')) {
+        // Lookup email by nickname
+        const { data: profile, error: lookupError } = await supabase
+          .from('organizers')
+          .select('email')
+          .ilike('nickname', emailOrNickname)
+          .single()
+
+        if (lookupError || !profile) {
+          console.error('Nickname not found:', emailOrNickname)
+          return false
+        }
+
+        email = profile.email
+      }
+
+      // Login with email
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -98,14 +132,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const register = async (email: string, password: string, name: string, phone?: string): Promise<boolean> => {
+  const register = async (email: string, password: string, fullName: string, nickname: string, phone?: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            name,
+            full_name: fullName,
+            nickname,
             phone: phone || null,
           },
         },
@@ -117,16 +152,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
-        // Create organizer profile
+        // Create user profile
         await supabase.from('organizers').insert({
           id: data.user.id,
           email: data.user.email!,
-          name,
+          full_name: fullName,
+          nickname,
           phone: phone || null,
-          role: 'ORGANIZER',
+          role: 'USER',
           email_verified: false,
           phone_verified: false,
-          admin_approved: false,
+          can_create_events: false,
+          avatar_url: '/default-avatar.svg',
         })
 
         await fetchUserProfile(data.user.id)

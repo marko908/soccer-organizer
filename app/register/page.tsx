@@ -18,7 +18,8 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
+    nickname: '',
     email: '',
     phone: '',
     password: '',
@@ -54,7 +55,7 @@ export default function RegisterPage() {
       return
     }
 
-    const success = await register(formData.email, formData.password, formData.name, formData.phone)
+    const success = await register(formData.email, formData.password, formData.fullName, formData.nickname, formData.phone)
 
     if (success) {
       router.push('/dashboard')
@@ -78,7 +79,7 @@ export default function RegisterPage() {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create Organizer Account
+            Create Account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
@@ -97,25 +98,44 @@ export default function RegisterPage() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                Full Name *
               </label>
               <input
-                id="name"
-                name="name"
+                id="fullName"
+                name="fullName"
                 type="text"
                 autoComplete="name"
                 required
                 className="input mt-1"
-                placeholder="Your full name"
-                value={formData.name}
+                placeholder="John Doe"
+                value={formData.fullName}
                 onChange={handleChange}
               />
             </div>
 
             <div>
+              <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">
+                Nickname *
+              </label>
+              <input
+                id="nickname"
+                name="nickname"
+                type="text"
+                required
+                className="input mt-1"
+                placeholder="johndoe"
+                value={formData.nickname}
+                onChange={handleChange}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Use for login and display. Must be unique.
+              </p>
+            </div>
+
+            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                Email address *
               </label>
               <input
                 id="email"
@@ -132,14 +152,13 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone number
+                Phone number (optional)
               </label>
               <input
                 id="phone"
                 name="phone"
                 type="tel"
                 autoComplete="tel"
-                required
                 className="input mt-1"
                 placeholder="+48 123 456 789"
                 value={formData.phone}

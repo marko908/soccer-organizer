@@ -4,7 +4,7 @@ import { getStripe } from '@/lib/stripe'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { eventId, participantName, participantEmail } = body
+    const { eventId, participantName, participantEmail, userId, avatarUrl } = body
 
     if (!eventId || !participantName) {
       return NextResponse.json(
@@ -75,6 +75,8 @@ export async function POST(request: NextRequest) {
         eventId: eventId.toString(),
         participantName,
         participantEmail: participantEmail || '',
+        userId: userId || '',
+        avatarUrl: avatarUrl || '/default-avatar.svg',
       },
     })
 

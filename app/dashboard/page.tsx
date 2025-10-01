@@ -65,12 +65,14 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Organizer Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {user.name}!</p>
+          <h1 className="text-3xl font-bold text-gray-900">My Events</h1>
+          <p className="text-gray-600">Welcome back, {user.fullName}!</p>
         </div>
-        <Link href="/create" className="btn-primary">
-          Create New Event
-        </Link>
+        {user.canCreateEvents && (
+          <Link href="/create" className="btn-primary">
+            Create New Event
+          </Link>
+        )}
       </div>
 
       <div className="card">

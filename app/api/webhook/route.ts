@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const session = event.data.object as any
 
     try {
-      const { eventId, participantName, participantEmail } = session.metadata
+      const { eventId, participantName, participantEmail, userId, avatarUrl } = session.metadata
 
       const { error } = await supabaseAdmin
         .from('participants')
@@ -46,6 +46,8 @@ export async function POST(request: NextRequest) {
           payment_status: 'succeeded',
           stripe_payment_intent_id: session.payment_intent,
           event_id: parseInt(eventId),
+          user_id: userId || null,
+          avatar_url: avatarUrl || '/default-avatar.svg',
         })
 
       if (error) throw error

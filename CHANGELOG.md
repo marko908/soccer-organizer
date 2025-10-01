@@ -11,6 +11,140 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02] - User Profile & Permission System Redesign
+
+### Added
+- **User Profile System**
+  - Full name and nickname now required on registration
+  - Profile page at `/profile` with editable fields: bio, age, weight, height
+  - Avatar system with default avatar (`/default-avatar.svg`)
+  - Nickname change restriction (30-day cooldown)
+  - Password reset functionality via Supabase email
+  - Profile accessible via navigation dropdown menu
+
+- **Permission-Based Access Control**
+  - New `can_create_events` boolean field (replaces `admin_approved`)
+  - By default, all new users have `can_create_events = false`
+  - Users can register without needing admin approval
+  - Admin panel to manage user permissions at `/admin`
+
+- **Admin Panel** (`/app/admin/page.tsx`)
+  - Dashboard with stats: Total Users, Can Create Events, Admins, Verified
+  - User table with search functionality (by name, nickname, email)
+  - Toggle switches to grant/revoke `can_create_events` permission
+  - Real-time permission updates
+  - Admin-only access with role verification
+
+- **Enhanced Event Joining**
+  - Logged-in users can choose display name format:
+    - Full Name only
+    - Nickname only (@nickname)
+    - Both (Full Name (@nickname))
+  - Auto-fill name and email from user profile
+  - Avatar display in participant lists
+  - User ID tracking for participants
+
+### Changed
+- **Database Schema** (`supabase-migration-user-profiles.sql`)
+  - `organizers` table:
+    - Added `full_name TEXT` (required)
+    - Added `nickname TEXT` (required, unique case-insensitive)
+    - Added `avatar_url TEXT` (default: `/default-avatar.svg`)
+    - Added `bio TEXT` (optional)
+    - Added `age INTEGER` (optional)
+    - Added `weight DECIMAL(5,2)` (optional)
+    - Added `height DECIMAL(5,2)` (optional)
+    - Added `can_create_events BOOLEAN` (default: `false`)
+    - Added `nickname_last_changed TIMESTAMP` (default: NOW)
+  - `participants` table:
+    - Added `user_id UUID` (foreign key to organizers)
+    - Added `avatar_url TEXT` (default: `/default-avatar.svg`)
+  - Migrated existing data: `name` → `full_name`, `admin_approved` → `can_create_events`
+  - Created unique case-insensitive index on nickname: `organizers_nickname_unique`
+
+- **RLS Policies** (`supabase-rls-fix.sql`)
+  - Event creation now checks `can_create_events` instead of `admin_approved`
+  - Policy: "Users with permission can create events"
+  - All policies recreated to avoid conflicts
+
+- **Authentication Flow**
+  - Login accepts email OR nickname (case-insensitive)
+  - Registration requires full_name and nickname
+  - Phone number is now optional
+  - Default role changed from `ORGANIZER` to `USER`
+
+- **User Interface**
+  - Navigation: Avatar dropdown with profile menu and admin panel link (if admin)
+  - Dashboard: Changed title from "Organizer Dashboard" to "My Events"
+  - Dashboard: "Create Event" button only shows if `user.canCreateEvents === true`
+  - Registration: Added full_name and nickname fields
+  - Login: Changed input label to "Email or Nickname"
+  - Event page: Participant list shows avatars instead of numbered badges
+
+### API Routes
+
+**New Routes:**
+- `GET /api/profile` - Get current user's profile
+- `PATCH /api/profile` - Update user profile (enforces 30-day nickname restriction)
+- `GET /api/admin/users?search=query` - List all users (admin only)
+- `POST /api/admin/toggle-permission` - Toggle can_create_events (admin only)
+
+**Updated Routes:**
+- `POST /api/simple-checkout` - Now accepts `userId` and `avatarUrl`
+- `POST /api/webhook` - Saves `user_id` and `avatar_url` when creating participants
+- `GET /api/simple-event/[id]` - Returns `avatarUrl` for participants
+
+### Components
+
+**New:**
+- `/app/profile/page.tsx` - User profile page with edit mode
+- `/app/admin/page.tsx` - Admin panel for user management
+
+**Updated:**
+- `contexts/AuthContext.tsx` - Added profile fields to User interface
+- `components/Navigation.tsx` - Avatar dropdown with profile/admin links
+- `app/dashboard/page.tsx` - Updated terminology and conditional buttons
+- `app/event/[id]/page.tsx` - Name display options and avatar support
+- `app/register/page.tsx` - Added full_name and nickname inputs
+- `app/login/page.tsx` - Email OR nickname login
+
+### Files Created
+- `supabase-migration-user-profiles.sql` - Database migration script
+- `supabase-rls-fix.sql` - RLS policy recreation script
+- `app/api/profile/route.ts` - Profile management API
+- `app/api/admin/users/route.ts` - User listing API
+- `app/api/admin/toggle-permission/route.ts` - Permission toggle API
+- `app/profile/page.tsx` - User profile page
+- `app/admin/page.tsx` - Admin panel page
+- `public/default-avatar.svg` - Default user avatar
+
+### Security
+- Nickname uniqueness enforced with case-insensitive index
+- 30-day cooldown on nickname changes
+- Admin-only routes verify user role before granting access
+- Permission toggle uses `supabaseAdmin` to bypass RLS
+- Profile updates validate ownership (users can only edit their own profile)
+
+### UX Improvements
+- Auto-fill participant name from profile when joining events
+- User can choose how their name appears in participant lists
+- Avatar visual identity in participant lists
+- Search functionality in admin panel for easier user management
+- Real-time stats dashboard for admins
+
+### Migration Notes
+To apply these changes to your database:
+1. Run `supabase-migration-user-profiles.sql` in Supabase SQL Editor
+2. Run `supabase-rls-fix.sql` to update RLS policies
+3. Make yourself admin:
+   ```sql
+   UPDATE organizers
+   SET role = 'ADMIN', can_create_events = true
+   WHERE email = 'your@email.com';
+   ```
+
+---
+
 ## [2025-10-01] - Update Documentation
 
 ### Changed

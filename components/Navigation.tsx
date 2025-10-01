@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import LanguageSelector from './LanguageSelector'
 
 export default function Navigation() {
@@ -11,6 +13,7 @@ export default function Navigation() {
   const { t } = useLanguage()
   const router = useRouter()
   const pathname = usePathname()
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
@@ -21,6 +24,7 @@ export default function Navigation() {
   const isCreatePage = pathname === '/create'
   const isDashboard = pathname === '/dashboard'
   const isAdminPage = pathname === '/admin'
+  const isProfilePage = pathname === '/profile'
 
   return (
     <header className="header-gradient sticky top-0 z-50">
@@ -58,33 +62,95 @@ export default function Navigation() {
               <>
                 {user ? (
                   <>
-                    <span className="text-gray-700">
-                      {t('dashboard.welcome')}, {user.name}
-                      {user.role === 'ADMIN' && (
-                        <span className="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
-                          Admin
-                        </span>
+                    {user.canCreateEvents && (
+                      <Link href="/create" className="btn-primary text-sm">
+                        {t('dashboard.createEvent')}
+                      </Link>
+                    )}
+
+                    {/* User Profile Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setDropdownOpen(!dropdownOpen)}
+                        className="flex items-center space-x-2 focus:outline-none"
+                      >
+                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 hover:border-primary-500 transition-colors">
+                          <Image
+                            src={user.avatarUrl}
+                            alt="Profile"
+                            width={40}
+                            height={40}
+                            className="object-cover"
+                          />
+                        </div>
+                        <svg
+                          className={`w-4 h-4 text-gray-600 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {dropdownOpen && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setDropdownOpen(false)}
+                          />
+                          <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                            <div className="px-4 py-2 border-b border-gray-200">
+                              <p className="text-sm font-semibold text-gray-900">{user.fullName}</p>
+                              <p className="text-xs text-gray-500">@{user.nickname}</p>
+                              {user.role === 'ADMIN' && (
+                                <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded-full">
+                                  Admin
+                                </span>
+                              )}
+                            </div>
+
+                            <Link
+                              href="/profile"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setDropdownOpen(false)}
+                            >
+                              👤 My Profile
+                            </Link>
+
+                            <Link
+                              href="/dashboard"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              onClick={() => setDropdownOpen(false)}
+                            >
+                              📊 My Events
+                            </Link>
+
+                            {user.role === 'ADMIN' && (
+                              <Link
+                                href="/admin"
+                                className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                onClick={() => setDropdownOpen(false)}
+                              >
+                                🔐 Admin Panel
+                              </Link>
+                            )}
+
+                            <hr className="my-2 border-gray-200" />
+
+                            <button
+                              onClick={() => {
+                                setDropdownOpen(false)
+                                handleLogout()
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                              🚪 {t('nav.logout')}
+                            </button>
+                          </div>
+                        </>
                       )}
-                    </span>
-                    {!isDashboard && (
-                      <Link href="/dashboard" className="btn-secondary text-sm">
-                        {t('nav.dashboard')}
-                      </Link>
-                    )}
-                    {user.role === 'ADMIN' && !isAdminPage && (
-                      <Link href="/admin" className="btn-secondary text-sm bg-red-50 text-red-600 hover:bg-red-100">
-                        Admin Panel
-                      </Link>
-                    )}
-                    <Link href="/create" className="btn-primary text-sm">
-                      {t('dashboard.createEvent')}
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="text-gray-600 hover:text-gray-900 text-sm"
-                    >
-                      {t('nav.logout')}
-                    </button>
+                    </div>
                   </>
                 ) : (
                   <>
