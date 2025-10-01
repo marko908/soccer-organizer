@@ -11,7 +11,8 @@
       "Bash(npm uninstall:*)",
       "Bash(start http://localhost:*)",
       "Bash(node:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(timeout 30 npm run dev)"
     ],
     "deny": [],
     "ask": []

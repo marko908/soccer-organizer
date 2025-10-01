@@ -32,6 +32,7 @@ export default function CreateEvent() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Important: include cookies
         body: JSON.stringify(formData),
       })
 
