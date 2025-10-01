@@ -147,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
           data: {
             full_name: fullName,
             nickname,
@@ -162,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.user) {
         // Create user profile
-        await supabase.from('users').insert({
+        const { error: insertError } = await supabase.from('users').insert({
           id: data.user.id,
           email: data.user.email!,
           full_name: fullName,
@@ -175,7 +176,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           avatar_url: '/default-avatar.svg',
         })
 
-        await fetchUserProfile(data.user.id)
+        if (insertError) {
+          console.error('Error creating user profile:', insertError)
+          return false
+        }
+
+        // Don't fetch profile yet - user needs to verify email first
         return true
       }
 

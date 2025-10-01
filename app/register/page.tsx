@@ -38,6 +38,8 @@ export default function RegisterPage() {
     return null
   }
 
+  const [showSuccess, setShowSuccess] = useState(false)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -58,9 +60,9 @@ export default function RegisterPage() {
     const success = await register(formData.email, formData.password, formData.fullName, formData.nickname, formData.phone)
 
     if (success) {
-      router.push('/dashboard')
+      setShowSuccess(true)
     } else {
-      setError('Registration failed. Please try again.')
+      setError('Registration failed. Email or nickname may already be taken.')
     }
 
     setIsSubmitting(false)
@@ -72,6 +74,46 @@ export default function RegisterPage() {
       ...prev,
       [name]: value
     }))
+  }
+
+  if (showSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="text-6xl mb-4">📧</div>
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-4">
+              Check your email
+            </h2>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-left">
+              <p className="text-green-800 mb-3">
+                We've sent a confirmation email to:
+              </p>
+              <p className="text-green-900 font-semibold mb-4">
+                {formData.email}
+              </p>
+              <p className="text-green-800 text-sm">
+                Click the link in the email to verify your account and complete registration.
+              </p>
+            </div>
+            <div className="mt-6">
+              <Link href="/login" className="btn-primary">
+                Go to Login
+              </Link>
+            </div>
+            <p className="mt-4 text-sm text-gray-600">
+              Didn't receive the email? Check your spam folder or{' '}
+              <button
+                onClick={() => setShowSuccess(false)}
+                className="text-primary-600 hover:text-primary-500 font-medium"
+              >
+                try again
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
