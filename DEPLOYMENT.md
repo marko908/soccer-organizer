@@ -41,9 +41,13 @@ STRIPE_SECRET_KEY=sk_live_your_key (or sk_test_ for testing)
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 ```
 
-**Authentication:**
+**Supabase Service Role:**
 ```
-JWT_SECRET=your-super-secret-jwt-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+```
+
+**Admin Setup:**
+```
 ADMIN_SETUP_KEY=your-admin-setup-key
 ```
 
@@ -64,13 +68,33 @@ NEXT_PUBLIC_BASE_URL=https://your-app.vercel.app
 
 Click "Deploy" in Vercel - your app will be live in minutes!
 
-## Database Management
+## Supabase Configuration
+
+### Email Templates
+
+Configure email templates in Supabase Dashboard:
+1. **Authentication** → **Email Templates**
+2. Update "Confirm signup" template
+3. Update "Reset password" template
+4. Ensure `{{ .ConfirmationURL }}` and `{{ .SiteURL }}` are used
+
+### Redirect URLs
+
+Add allowed redirect URLs:
+1. **Authentication** → **URL Configuration**
+2. **Site URL**: `https://your-app.vercel.app`
+3. **Redirect URLs**:
+   - `https://your-app.vercel.app/**`
+   - `https://your-app.vercel.app/auth/confirm`
+   - `http://localhost:3000/**` (for local dev)
+
+### Database Management
 
 Your Supabase database is production-ready:
 - Automatic backups
 - Connection pooling
-- Built-in authentication (optional)
-- Real-time subscriptions (if needed)
+- Row Level Security (RLS) enabled
+- Real-time subscriptions available
 
 Manage your database through:
 - Supabase Dashboard → Table Editor
@@ -81,9 +105,17 @@ Manage your database through:
 
 ### Create First Admin User
 
+**Option 1: Via Supabase SQL Editor (Recommended)**
+```sql
+UPDATE users
+SET role = 'ADMIN', can_create_events = true
+WHERE email = 'your@email.com';
+```
+
+**Option 2: Via Setup Page**
 1. Visit `https://your-app.vercel.app/setup-admin`
 2. Use your `ADMIN_SETUP_KEY` to create the first admin
-3. This admin can then approve new organizers
+3. This admin can then manage user permissions via `/admin`
 
 ### Monitor
 

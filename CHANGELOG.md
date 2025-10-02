@@ -11,6 +11,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02 Part 4] - Code Cleanup & Audit
+
+### Removed
+- **Old Email Verification System** 🗑️
+  - Deleted `app/api/verify-email/route.ts` - Custom token-based verification
+  - Deleted `app/api/send-verification/route.ts` - Custom verification email sender
+  - Deleted `app/verify-email/page.tsx` - Custom verification page
+  - Dropped `email_verifications` table from database
+  - Reason: Replaced by Supabase Auth built-in email confirmation
+
+- **Unused API Routes**
+  - Deleted `app/api/auth/confirm/route.ts` - Created during troubleshooting but never used
+
+- **Obsolete SQL Files** (8 files)
+  - `supabase-debug-policies.sql` - Debug script
+  - `supabase-simple-fix.sql` - Troubleshooting fix
+  - `supabase-fix-name-column.sql` - One-time migration
+  - `supabase-check-users-policies.sql` - Debug check
+  - `supabase-add-public-profiles-policy.sql` - Already applied
+  - `supabase-cleanup-duplicate-policies.sql` - Troubleshooting
+  - `supabase-fix-registration-rls.sql` - Historical fix
+  - `supabase-rls-fix.sql` - Old RLS fix
+
+- **Obsolete SQL Migration Files** (4 files)
+  - `supabase-migration-user-profiles.sql` - Already applied
+  - `supabase-rename-organizers-to-users.sql` - Already applied
+  - `supabase-rls-policies.sql` - Outdated policies
+  - `supabase-rls-policies-updated.sql` - Outdated policies
+
+- **Obsolete Documentation** (8 files)
+  - `RLS-SETUP.md` - Outdated setup guide
+  - `IMPLEMENTATION-STATUS.md` - Outdated status
+  - `NEXT-STEPS.md` - Completed tasks
+  - `SUPABASE-EMAIL-SETUP.md` - Outdated email setup
+  - `SUPABASE-PASSWORD-RESET-SETUP.md` - Outdated reset setup
+  - `FIX-EMAIL-CONFIRMATION.md` - Resolved issue
+  - `SUPABASE-QUICK-FIX.md` - Temporary fix
+  - `SUPABASE-EMAIL-TEMPLATE-FIX.md` - Fixed template issue
+
+### Fixed
+- **Updated Table References** 📝
+  - Fixed `organizers` → `users` in `app/api/verify-email/route.ts` (before deletion)
+  - Fixed `organizers` → `users` in `app/api/send-verification/route.ts` (before deletion)
+  - Fixed `organizers` → `users` in `app/api/admin/pending-organizers/route.ts`
+  - Fixed comments in `app/api/simple-me/route.ts` and `app/api/simple-login/route.ts`
+  - Changed "Get user profile from organizers table" → "Get user profile from users table"
+
+### Changed
+- **Documentation Updates**
+  - Updated `README.md` with current features and architecture
+  - Removed references to old `organizers` table, now `users`
+  - Added public profiles section
+  - Added seed users instructions
+  - Updated file structure
+  - Simplified setup instructions (removed obsolete SQL references)
+
+### Summary
+- **25 files deleted** (3 TypeScript + 12 SQL + 8 Markdown + 1 directory + 1 database table)
+- **4 TypeScript files updated** (fixed table references and comments)
+- **1 README updated** (current state of application)
+- **Codebase cleaned** - No obsolete code or documentation remaining
+
+---
+
 ## [2025-10-02 Part 3] - Public User Profiles & Session Persistence
 
 ### Added

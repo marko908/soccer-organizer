@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user profile from organizers table
+    // Get user profile from users table
     const { data: profile } = await supabase
       .from('users')
       .select('name, role')

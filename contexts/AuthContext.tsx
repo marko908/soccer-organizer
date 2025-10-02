@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth()
 
     // Listen for auth state changes
+    // Supabase automatically refreshes tokens, no manual refresh needed
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state change:', event, session?.user?.email)
 
@@ -53,20 +54,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
 
-    // Set up token refresh interval (every 50 minutes, tokens expire after 60 min)
-    const refreshInterval = setInterval(async () => {
-      console.log('🔄 Refreshing session...')
-      const { data, error } = await supabase.auth.refreshSession()
-      if (error) {
-        console.error('❌ Session refresh failed:', error)
-      } else {
-        console.log('✅ Session refreshed')
-      }
-    }, 50 * 60 * 1000) // 50 minutes
-
     return () => {
       subscription.unsubscribe()
-      clearInterval(refreshInterval)
     }
   }, [])
 

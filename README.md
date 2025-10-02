@@ -4,10 +4,14 @@ A pay-to-play soccer game organization web application built with Next.js, Supab
 
 ## Features
 
+- **User Profiles**: Complete profile system with avatars, bio, and stats
+- **Public Profiles**: Share your profile at `/u/[username]`
 - **Event Creation**: Create soccer events with date, location, and pricing
 - **Payment Integration**: Stripe checkout with BLIK support
 - **Real-time Updates**: Live participant list and payment progress
+- **Permission System**: Admin-controlled event creation permissions
 - **Responsive Design**: Modern UI with Tailwind CSS
+- **Multi-language**: Polish and English support
 
 ## Tech Stack
 
@@ -66,14 +70,22 @@ NEXT_PUBLIC_BASE_URL="http://localhost:3000"
    - `anon` / `public` key
    - `service_role` key (⚠️ keep secret!)
 4. Add the credentials to your `.env.local` file
-5. Run the SQL migration in Supabase SQL Editor:
-   - Open `supabase-rls-policies.sql`
-   - Copy and paste the contents
-   - Click "Run" to enable Row Level Security
+5. Configure Supabase email templates:
+   - Authentication → Email Templates
+   - Update confirmation and password reset templates
+6. Add redirect URLs:
+   - Authentication → URL Configuration
+   - Add your domain (e.g., `https://your-app.vercel.app/**`)
 
-For detailed setup instructions, see [RLS-SETUP.md](./RLS-SETUP.md)
+### 5. Seed Sample Users (Optional)
 
-### 5. Run the Application
+```bash
+node scripts/seed-users.js
+```
+
+This creates 15 test users. See `scripts/README.md` for details.
+
+### 6. Run the Application
 
 ```bash
 npm run dev
@@ -83,41 +95,60 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Usage
 
-### Creating an Event (Organizer)
+### Registration
 
-1. Visit `/create`
-2. Fill in event details:
+1. Visit `/register`
+2. Fill in: Full Name, Nickname, Email, Phone (optional), Password
+3. Confirm email via Supabase email
+4. Login and complete your profile at `/profile`
+
+### Creating an Event
+
+1. Get `can_create_events` permission from admin
+2. Visit `/create`
+3. Fill in event details:
    - Name (e.g., "Friday Soccer at Orlik")
    - Date & Time
    - Location
    - Total Cost (e.g., 200 PLN)
    - Max Players (e.g., 14)
-3. The price per player is automatically calculated
-4. Share the generated event URL with players
+4. Price per player is automatically calculated
+5. Share the generated event URL with players
 
-### Joining an Event (Player)
+### Joining an Event
 
 1. Visit the event URL `/event/[id]`
 2. View event details and current participants
 3. Click "Pay & Sign Up"
-4. Enter your name (email optional)
+4. Enter your details (auto-filled if logged in)
 5. Complete payment via Stripe (supports BLIK)
 6. Your spot is secured upon successful payment
+
+### Public Profiles
+
+View any user's profile at `/u/[username]`:
+- `/u/johnny_goals`
+- `/u/admin_mike`
 
 ## File Structure
 
 ```
 ├── app/
 │   ├── api/
-│   │   ├── admin/              # Admin & organizer management
-│   │   ├── simple-events/      # Event CRUD operations
-│   │   ├── simple-event/[id]/  # Event details endpoint
+│   │   ├── admin/              # Admin & user management
+│   │   ├── simple-*            # Event & participant CRUD
 │   │   ├── create-checkout/    # Stripe checkout session
-│   │   └── webhook/            # Stripe webhook handler
-│   ├── auth/confirm/           # Email confirmation page
+│   │   ├── webhook/            # Stripe webhook handler
+│   │   └── profile/            # User profile management
+│   ├── auth/
+│   │   ├── confirm/            # Email confirmation page
+│   │   └── reset-password/     # Password reset page
+│   ├── u/[username]/           # Public user profiles
 │   ├── create/                 # Event creation page
-│   ├── dashboard/              # Organizer dashboard
+│   ├── dashboard/              # User dashboard
 │   ├── event/[id]/             # Dynamic event display
+│   ├── profile/                # User profile page
+│   ├── admin/                  # Admin panel
 │   └── page.tsx                # Homepage
 ├── lib/
 │   ├── supabase.ts             # Client-side Supabase client
@@ -125,35 +156,34 @@ The application will be available at [http://localhost:3000](http://localhost:30
 │   ├── supabase-admin.ts       # Admin client with service_role key
 │   └── stripe.ts               # Stripe client setup
 ├── components/                 # React components
-├── contexts/                   # React contexts (Auth, etc.)
+├── contexts/                   # React contexts (Auth, Language)
+├── scripts/                    # Utility scripts (seed users)
 ├── middleware.ts               # Supabase SSR session sync
-├── supabase-rls-policies.sql   # Database security policies
-└── RLS-SETUP.md                # RLS setup guide
+└── public/                     # Static assets
 ```
 
 ## Database Schema
 
-### Authentication
-Users are managed by **Supabase Auth** (`auth.users` table) with custom profile data in `organizers` table.
-
-### Organizers
+### Users (formerly `organizers`)
 - `id`: UUID (references `auth.users.id`)
-- `email`: Organizer email (unique)
-- `name`: Organizer name
+- `email`: User email (unique)
+- `full_name`: User's full name
+- `nickname`: Username (unique, case-insensitive)
 - `phone`: Phone number (optional)
-- `role`: TEXT ('ADMIN' | 'ORGANIZER')
+- `avatar_url`: Profile picture URL
+- `bio`: User biography
+- `age`, `weight`, `height`: Profile stats
+- `role`: TEXT ('ADMIN' | 'USER')
+- `can_create_events`: Boolean (admin-controlled)
 - `email_verified`: Boolean
 - `phone_verified`: Boolean
-- `admin_approved`: Boolean (must be true to create events)
-- `approved_at`: Timestamp
-- `approved_by`: Admin identifier
-- `created_at`: Timestamp
-- `updated_at`: Timestamp
+- `created_at`, `updated_at`: Timestamps
 
 **RLS Policies:**
+- Public profiles viewable by everyone
 - Users can view/update their own profile
-- Admins can view/update all organizers
-- Role and approval status protected from self-modification
+- Admins can view/update all users
+- Role and permissions protected from self-modification
 
 ### Events
 - `id`: Auto-increment primary key
@@ -163,19 +193,20 @@ Users are managed by **Supabase Auth** (`auth.users` table) with custom profile 
 - `total_cost`: Total cost for the pitch (DECIMAL)
 - `max_players`: Maximum number of players (INTEGER)
 - `price_per_player`: Cost per participant (DECIMAL)
-- `organizer_id`: UUID (Foreign key to Organizers)
-- `created_at`: Timestamp
-- `updated_at`: Timestamp
+- `organizer_id`: UUID (Foreign key to Users)
+- `created_at`, `updated_at`: Timestamps
 
 **RLS Policies:**
 - Anyone can view events (public)
-- Only approved organizers can create events
-- Organizers can update/delete their own events
+- Only users with `can_create_events = true` can create events
+- Users can update/delete their own events
 
 ### Participants
 - `id`: Auto-increment primary key
 - `name`: Participant name
 - `email`: Optional email
+- `user_id`: UUID (optional link to users)
+- `avatar_url`: Profile picture
 - `payment_status`: TEXT ('pending' | 'succeeded' | 'failed')
 - `stripe_payment_intent_id`: Stripe payment reference
 - `event_id`: Foreign key to Events
@@ -217,17 +248,12 @@ This will give you a webhook secret starting with `whsec_` to use in your `.env.
 
 ### Vercel (Recommended)
 
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+
+**Quick steps:**
 1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY` (⚠️ keep secret!)
-   - `STRIPE_PUBLISHABLE_KEY`
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
-   - `ADMIN_SETUP_KEY`
-   - `NEXT_PUBLIC_BASE_URL`
+2. Connect repository to Vercel
+3. Add environment variables in Vercel dashboard
 4. Configure production Stripe webhook endpoint
 5. Deploy!
 
@@ -235,10 +261,17 @@ This will give you a webhook secret starting with `whsec_` to use in your `.env.
 - ✅ Row Level Security (RLS) enabled on all tables
 - ✅ Service role key added to environment variables (never exposed to client)
 - ✅ Supabase Auth manages passwords and sessions
-- ✅ Email verification required for organizers
-- ✅ Admin approval required before creating events
+- ✅ Email verification required for users
+- ✅ Public profile access with proper RLS policies
+- ✅ Admin-controlled event creation permissions
 
-Your Supabase database is already production-ready and will be used automatically.
+## Admin Panel
+
+Access at `/admin` (requires ADMIN role):
+- View all users and their permissions
+- Grant/revoke `can_create_events` permission
+- Search users by name, nickname, or email
+- View system statistics
 
 ## License
 
