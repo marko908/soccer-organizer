@@ -11,6 +11,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02 Part 3] - Public User Profiles & Session Persistence
+
+### Added
+- **Public User Profiles** 🎭
+  - New route: `/u/[username]` for viewing user profiles
+  - Profile header: Avatar, name, nickname, role badges (Admin, Organizer)
+  - Two tabs: About (bio, stats) and Events (organized events)
+  - Stats display: Age, weight, height in styled cards
+  - "Edit Profile" button for own profile
+  - 404 page for non-existent users
+  - Examples: `/u/johnny_goals`, `/u/admin_mike`
+
+- **Seed Users Script** 🌱
+  - Node.js script using Supabase Admin API (`scripts/seed-users.js`)
+  - Creates 15 real users with auth credentials
+  - All can login with password: `Password123!`
+  - Diverse profiles: complete, partial, minimal data
+  - Includes 1 admin and 6 organizers
+  - Auto-verified emails
+  - Script documentation in `scripts/README.md`
+
+### Fixed
+- **Session Persistence** 🔐
+  - Proper cookie handling in `createBrowserClient`
+  - Custom get/set/remove cookie methods with encoding
+  - Automatic token refresh every 50 minutes (tokens expire at 60min)
+  - Enhanced auth state change logging (SIGNED_OUT, SIGNED_IN, TOKEN_REFRESHED)
+  - Fixes: Session cookies disappearing, requiring frequent re-login
+
+- **RLS Policy for Public Profiles**
+  - Added "Public profiles are viewable by everyone" policy
+  - Allows anonymous and authenticated users to view all profiles
+  - Required for `/u/[username]` pages to work
+
+- **Login Simplification**
+  - Removed nickname login (now email only)
+  - Simplified `login(email, password)` function
+  - Removed database lookup for nickname → email conversion
+  - Updated login form to require email format
+
+- **Password Reset Flow**
+  - Created `/auth/reset-password` page
+  - Email template configuration guide
+  - Form validation and password confirmation
+  - Auto-redirect to dashboard after success
+
+### Technical Details
+- **Cookie Configuration**: Explicit cookie handlers with maxAge, path, domain, sameSite, secure options
+- **Token Refresh**: `setInterval` every 50min calling `supabase.auth.refreshSession()`
+- **Public Access**: RLS policy `USING (true)` for SELECT on users table
+- **Files Added**:
+  - `app/u/[username]/page.tsx` - Public profile page
+  - `scripts/seed-users.js` - User seeding script
+  - `scripts/README.md` - Seeding instructions
+  - `app/auth/reset-password/page.tsx` - Password reset form
+
+---
+
 ## [2025-10-02 Part 2] - Email Confirmation & Auth State Management Fixes
 
 ### Fixed
