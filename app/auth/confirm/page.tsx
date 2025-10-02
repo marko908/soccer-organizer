@@ -16,13 +16,37 @@ function ConfirmEmailContent() {
   useEffect(() => {
     const confirmEmail = async () => {
       try {
-        // Check for new PKCE flow (code parameter)
+        console.log('📧 All URL params:', Object.fromEntries(searchParams.entries()))
+
+        // Supabase automatically handles the session after redirect
+        // Just check if the user is now authenticated
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError) {
+          console.error('❌ Session error:', sessionError)
+          setStatus('error')
+          setErrorMessage(sessionError.message)
+          return
+        }
+
+        if (session) {
+          console.log('✅ Email confirmed! Session found:', session.user.email)
+          setStatus('success')
+          // Redirect to dashboard after 2 seconds
+          setTimeout(() => {
+            router.push('/dashboard')
+          }, 2000)
+          return
+        }
+
+        // If no session yet, try the manual flow
         const code = searchParams.get('code')
+        const token_hash = searchParams.get('token_hash')
+        const type = searchParams.get('type')
 
         if (code) {
           console.log('📧 Using PKCE flow with code:', code)
 
-          // Exchange the code for a session
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
           if (error) {
@@ -34,23 +58,12 @@ function ConfirmEmailContent() {
             console.log('✅ Email confirmed successfully!')
             console.log('✅ User data:', data)
             setStatus('success')
-            // Redirect to dashboard after 2 seconds
             setTimeout(() => {
               router.push('/dashboard')
             }, 2000)
           }
-        } else {
-          // Fallback to old token_hash flow
-          const token_hash = searchParams.get('token_hash')
-          const type = searchParams.get('type')
-
+        } else if (token_hash && type) {
           console.log('📧 Using legacy flow - token_hash:', token_hash, 'type:', type)
-
-          if (!token_hash || !type) {
-            setStatus('error')
-            setErrorMessage('Invalid confirmation link')
-            return
-          }
 
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash,
@@ -68,6 +81,10 @@ function ConfirmEmailContent() {
               router.push('/dashboard')
             }, 2000)
           }
+        } else {
+          console.log('⚠️ No confirmation parameters found')
+          setStatus('error')
+          setErrorMessage('Invalid confirmation link - no code or token provided')
         }
       } catch (error: any) {
         console.error('❌ Confirmation error:', error)
