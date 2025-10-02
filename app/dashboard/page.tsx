@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { formatDateTimeShort } from '@/lib/utils'
 
 interface Event {
   id: number
@@ -97,14 +98,7 @@ export default function Dashboard() {
                     <div>
                       <h3 className="text-lg font-medium text-gray-900">{event.name}</h3>
                       <p className="text-sm text-gray-600">
-                        {new Date(event.date).toLocaleDateString('pl-PL', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {formatDateTimeShort(event.date)}
                       </p>
                       <p className="text-sm text-gray-600">{event.location}</p>
                     </div>

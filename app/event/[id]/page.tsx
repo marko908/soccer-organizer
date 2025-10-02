@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { formatCurrency, formatDateTime, formatDateTimeShort } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 
@@ -172,7 +172,7 @@ export default function EventPage() {
               <div className="flex items-center">
                 <span className="text-lg">📅</span>
                 <span className="ml-2">
-                  {formatDateTime(event.date)}
+                  {formatDateTimeShort(event.date)}
                 </span>
               </div>
 
