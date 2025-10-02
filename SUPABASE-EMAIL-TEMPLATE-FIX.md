@@ -13,7 +13,18 @@ Email confirmation links have no parameters (`token_hash: null, type: null`)
 
 ### Step 2: Update the Template
 
-Replace the entire template with this:
+Replace the entire template with this (using server-side API route):
+
+```html
+<h2>Confirm your signup</h2>
+
+<p>Follow this link to confirm your user:</p>
+<p><a href="{{ .SiteURL }}/api/auth/confirm?code={{ .Token }}">Confirm your email address</a></p>
+```
+
+**IMPORTANT:** This uses `/api/auth/confirm` which is a server-side route that handles the code exchange properly.
+
+Alternative (client-side, if the above doesn't work):
 
 ```html
 <h2>Confirm your signup</h2>
@@ -21,8 +32,6 @@ Replace the entire template with this:
 <p>Follow this link to confirm your user:</p>
 <p><a href="{{ .ConfirmationURL }}">Confirm your email address</a></p>
 ```
-
-**IMPORTANT:** Use `{{ .ConfirmationURL }}` - this automatically generates the correct URL with the `code` parameter for PKCE flow.
 
 ### Step 3: Alternative (if above doesn't work)
 
