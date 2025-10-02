@@ -28,7 +28,12 @@ function ConfirmEmailContent() {
           console.log('📧 Calling exchangeCodeForSession...')
 
           try {
-            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            const exchangePromise = supabase.auth.exchangeCodeForSession(code)
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Exchange code timeout after 10s')), 10000)
+            )
+
+            const { data, error } = await Promise.race([exchangePromise, timeoutPromise]) as any
 
             console.log('📧 exchangeCodeForSession response - data:', data)
             console.log('📧 exchangeCodeForSession response - error:', error)
