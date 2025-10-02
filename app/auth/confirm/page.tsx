@@ -18,28 +18,7 @@ function ConfirmEmailContent() {
       try {
         console.log('📧 All URL params:', Object.fromEntries(searchParams.entries()))
 
-        // Supabase automatically handles the session after redirect
-        // Just check if the user is now authenticated
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-        if (sessionError) {
-          console.error('❌ Session error:', sessionError)
-          setStatus('error')
-          setErrorMessage(sessionError.message)
-          return
-        }
-
-        if (session) {
-          console.log('✅ Email confirmed! Session found:', session.user.email)
-          setStatus('success')
-          // Redirect to dashboard after 2 seconds
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 2000)
-          return
-        }
-
-        // If no session yet, try the manual flow
+        // Try the manual flow first
         const code = searchParams.get('code')
         const token_hash = searchParams.get('token_hash')
         const type = searchParams.get('type')
