@@ -18,68 +18,22 @@ function ConfirmEmailContent() {
       try {
         console.log('📧 All URL params:', Object.fromEntries(searchParams.entries()))
 
-        // Try the manual flow first
-        const code = searchParams.get('code')
-        const token_hash = searchParams.get('token_hash')
-        const type = searchParams.get('type')
+        // Check if user is already authenticated (Supabase auto-confirms on redirect)
+        const { data: { session } } = await supabase.auth.getSession()
 
-        if (code) {
-          console.log('📧 Using PKCE flow with code:', code)
-          console.log('📧 Calling exchangeCodeForSession...')
-
-          try {
-            const exchangePromise = supabase.auth.exchangeCodeForSession(code)
-            const timeoutPromise = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Exchange code timeout after 10s')), 10000)
-            )
-
-            const { data, error } = await Promise.race([exchangePromise, timeoutPromise]) as any
-
-            console.log('📧 exchangeCodeForSession response - data:', data)
-            console.log('📧 exchangeCodeForSession response - error:', error)
-
-            if (error) {
-              console.error('❌ Email confirmation error:', error)
-              console.error('❌ Error details:', JSON.stringify(error, null, 2))
-              setStatus('error')
-              setErrorMessage(error.message || 'Confirmation link expired or invalid')
-            } else {
-              console.log('✅ Email confirmed successfully!')
-              console.log('✅ User data:', data)
-              setStatus('success')
-              setTimeout(() => {
-                router.push('/dashboard')
-              }, 2000)
-            }
-          } catch (exchangeError: any) {
-            console.error('❌ exchangeCodeForSession threw error:', exchangeError)
-            setStatus('error')
-            setErrorMessage(exchangeError.message || 'Failed to exchange code for session')
-          }
-        } else if (token_hash && type) {
-          console.log('📧 Using legacy flow - token_hash:', token_hash, 'type:', type)
-
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash,
-            type: type as any,
-          })
-
-          if (error) {
-            console.error('❌ Email confirmation error:', error)
-            setStatus('error')
-            setErrorMessage(error.message)
-          } else {
-            console.log('✅ Email confirmed successfully!')
-            setStatus('success')
-            setTimeout(() => {
-              router.push('/dashboard')
-            }, 2000)
-          }
-        } else {
-          console.log('⚠️ No confirmation parameters found')
-          setStatus('error')
-          setErrorMessage('Invalid confirmation link - no code or token provided')
+        if (session) {
+          console.log('✅ Email already confirmed! Session exists:', session.user.email)
+          setStatus('success')
+          setTimeout(() => {
+            router.push('/dashboard')
+          }, 2000)
+          return
         }
+
+        // If no session, show error (shouldn't happen with ConfirmationURL)
+        console.log('⚠️ No session found after confirmation redirect')
+        setStatus('error')
+        setErrorMessage('Please try logging in manually')
       } catch (error: any) {
         console.error('❌ Confirmation error:', error)
         setStatus('error')
