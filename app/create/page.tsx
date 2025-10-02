@@ -26,6 +26,38 @@ export default function CreateEvent() {
     e.preventDefault()
     setLoading(true)
 
+    // Validation
+    const totalCost = parseFloat(formData.totalCost)
+    const maxPlayers = parseInt(formData.maxPlayers)
+    const eventDate = new Date(formData.date)
+    const now = new Date()
+    const maxDate = new Date()
+    maxDate.setDate(maxDate.getDate() + 90)
+
+    if (totalCost > 1500) {
+      alert('Total cost cannot exceed 1500 PLN')
+      setLoading(false)
+      return
+    }
+
+    if (maxPlayers > 30) {
+      alert('Maximum number of players is 30')
+      setLoading(false)
+      return
+    }
+
+    if (eventDate < now) {
+      alert('Event date must be in the future')
+      setLoading(false)
+      return
+    }
+
+    if (eventDate > maxDate) {
+      alert('Events can only be created up to 90 days in advance')
+      setLoading(false)
+      return
+    }
+
     try {
       const response = await fetch('/api/simple-events', {
         method: 'POST',
@@ -110,6 +142,7 @@ export default function CreateEvent() {
               value={formData.date}
               onChange={handleChange}
             />
+            <p className="text-xs text-gray-500 mt-1">Events can be created up to 90 days in advance</p>
           </div>
 
           <div>
@@ -139,12 +172,14 @@ export default function CreateEvent() {
                 name="totalCost"
                 step="0.01"
                 min="0"
+                max="1500"
                 required
                 className="input"
                 placeholder="200.00"
                 value={formData.totalCost}
                 onChange={handleChange}
               />
+              <p className="text-xs text-gray-500 mt-1">Maximum: 1500 PLN</p>
             </div>
 
             <div>
@@ -156,13 +191,14 @@ export default function CreateEvent() {
                 id="maxPlayers"
                 name="maxPlayers"
                 min="2"
-                max="50"
+                max="30"
                 required
                 className="input"
                 placeholder="14"
                 value={formData.maxPlayers}
                 onChange={handleChange}
               />
+              <p className="text-xs text-gray-500 mt-1">Maximum: 30 players</p>
             </div>
           </div>
 

@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-02 Part 5] - Event Creation Validations
+
+### Added
+- **Event Creation Limits** 🎯
+  - Total cost cannot exceed 1500 PLN (with UI hint)
+  - Maximum players limited to 30 (previously 50)
+  - Events can only be created up to 90 days in advance
+  - Date must be in the future
+  - Client-side validation with user-friendly error messages
+
+### Changed
+- **Date/Time Format** 📅
+  - Already using European format (`pl-PL`)
+  - Added `formatDateTimeShort()` utility: DD.MM.YYYY HH:mm
+  - All dates display in Polish locale format
+
+### Technical Details
+- **Form Validation** (`app/create/page.tsx`):
+  - Validates total cost ≤ 1500 PLN
+  - Validates max players ≤ 30
+  - Validates event date < now + 90 days
+  - Shows helpful hints under each input field
+- **Utility Functions** (`lib/utils.ts`):
+  - Added `formatDateTimeShort()` for compact date display
+
+---
+
 ## [2025-10-02 Part 4] - Code Cleanup & Audit
 
 ### Removed
