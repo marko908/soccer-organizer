@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2025-10-02 Part 5] - Event Creation Validations
+## [2025-10-02 Part 5] - Event Creation Validations & Date Formatting
 
 ### Added
 - **Event Creation Limits** 🎯
@@ -19,22 +19,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Maximum players limited to 30 (previously 50)
   - Events can only be created up to 90 days in advance
   - Date must be in the future
+  - Calendar maximum year set to 2050
   - Client-side validation with user-friendly error messages
 
 ### Changed
 - **Date/Time Format** 📅
-  - Already using European format (`pl-PL`)
-  - Added `formatDateTimeShort()` utility: DD.MM.YYYY HH:mm
-  - All dates display in Polish locale format
+  - Changed to dd/mm/yyyy format (e.g., 25/12/2024)
+  - 24-hour time format (e.g., 23:59, not 11:59 PM)
+  - `formatDateTimeShort()` now returns: dd/mm/yyyy HH:mm
+  - Added `hour12: false` to all time formatters
+  - Calendar limited to year 2050
 
 ### Technical Details
 - **Form Validation** (`app/create/page.tsx`):
   - Validates total cost ≤ 1500 PLN
   - Validates max players ≤ 30
   - Validates event date < now + 90 days
+  - `max="2050-12-31T23:59"` on datetime input
   - Shows helpful hints under each input field
 - **Utility Functions** (`lib/utils.ts`):
-  - Added `formatDateTimeShort()` for compact date display
+  - `formatDateTimeShort()`: Manual formatting for dd/mm/yyyy HH:mm
+  - `formatDateTime()`: Added `hour12: false`
+  - `formatTime()`: Added `hour12: false`
 
 ---
 

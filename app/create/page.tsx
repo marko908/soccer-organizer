@@ -141,8 +141,9 @@ export default function CreateEvent() {
               className="input"
               value={formData.date}
               onChange={handleChange}
+              max="2050-12-31T23:59"
             />
-            <p className="text-xs text-gray-500 mt-1">Events can be created up to 90 days in advance</p>
+            <p className="text-xs text-gray-500 mt-1">Events can be created up to 90 days in advance (max year: 2050)</p>
           </div>
 
           <div>
