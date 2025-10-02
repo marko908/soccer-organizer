@@ -50,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('🔍 Fetching profile for user:', userId)
       const { data: profile, error } = await supabase
         .from('users')
         .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
@@ -57,13 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single()
 
       if (error) {
-        console.error('Error fetching profile:', error)
+        console.error('❌ Error fetching profile:', error)
+        setUser(null)
         return
       }
 
       const { data: { user: authUser } } = await supabase.auth.getUser()
 
       if (authUser && profile) {
+        console.log('✅ Profile loaded:', profile.nickname)
         setUser({
           id: authUser.id,
           email: profile.email || authUser.email!,
@@ -77,22 +80,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           height: profile.height,
           canCreateEvents: profile.can_create_events || false,
         })
+      } else {
+        console.log('⚠️ No profile or auth user found')
+        setUser(null)
       }
     } catch (error) {
-      console.error('Failed to fetch user profile:', error)
+      console.error('❌ Failed to fetch user profile:', error)
+      setUser(null)
     }
   }
 
   const checkAuth = async () => {
     try {
+      console.log('🔐 Checking auth...')
       const { data: { session } } = await supabase.auth.getSession()
 
       if (session?.user) {
+        console.log('✅ Session found:', session.user.email)
         await fetchUserProfile(session.user.id)
+      } else {
+        console.log('❌ No session found')
+        setUser(null)
       }
     } catch (error) {
-      console.error('Auth check failed:', error)
+      console.error('❌ Auth check failed:', error)
+      setUser(null)
     } finally {
+      console.log('✅ Auth check complete, loading = false')
       setLoading(false)
     }
   }
