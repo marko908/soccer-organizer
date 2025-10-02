@@ -7,13 +7,5 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 // Uses localStorage for better session persistence
 export const supabase = createBrowserClient(
   supabaseUrl,
-  supabaseAnonKey,
-  {
-    auth: {
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  }
+  supabaseAnonKey
 )
