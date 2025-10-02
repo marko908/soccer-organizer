@@ -4,9 +4,6 @@
 -- Note: These users won't be able to login (no auth.users entries)
 -- They are for demonstration purposes only
 
--- Temporarily disable the foreign key constraint
-ALTER TABLE users DISABLE TRIGGER ALL;
-
 -- Delete existing seed users if any
 DELETE FROM users WHERE email LIKE '%@example.com';
 
@@ -83,9 +80,6 @@ VALUES
   (gen_random_uuid(), 'william.white@example.com', 'William White', 'will_goalie', '+48123456715', 'USER', '/default-avatar.svg',
    'Goalkeeper with 10 years of experience. Reliable, communicative, and always ready to save the day! 🧤 Looking for regular games.',
    31, 80, 188, false, true, true, NOW() - INTERVAL '1 year 8 months');
-
--- Re-enable triggers and constraints
-ALTER TABLE users ENABLE TRIGGER ALL;
 
 -- Verify the insert
 SELECT
