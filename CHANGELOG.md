@@ -11,7 +11,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2025-10-02] - Registration & Email Confirmation Fixes
+## [2025-10-02 Part 2] - Email Confirmation & Auth State Management Fixes
+
+### Fixed
+- **Email Confirmation Flow** ✅
+  - Issue: Email confirmation page stuck on infinite loading
+  - Root cause: `exchangeCodeForSession` not working client-side with `createBrowserClient`
+  - Solution: Simplified to check if session exists (Supabase auto-creates session on redirect)
+  - Confirmation now works: User clicks email link → auto-logged in → redirected to dashboard
+  - Template: `{{ .ConfirmationURL }}` in Supabase email template
+
+- **Auth State Management** ✅
+  - Issue: Login/logout buttons disappearing after logout or page refresh
+  - Root cause: `fetchUserProfile` not setting `user = null` on error
+  - Added proper `setUser(null)` in all error cases
+  - Added comprehensive logging with emoji markers (🔐, ✅, ❌) for debugging
+  - `loading` state now properly managed throughout auth lifecycle
+
+- **Server-side Email Confirmation Route**
+  - Created `/api/auth/confirm` route for server-side code exchange (backup solution)
+  - Handles PKCE flow with proper cookie setting
+  - Not currently used but available as fallback
+
+### Added
+- **Debugging Documentation**
+  - Updated `SUPABASE-EMAIL-TEMPLATE-FIX.md` with both client and server-side approaches
+  - Detailed logging in AuthContext for troubleshooting auth issues
+
+### Technical Details
+- **Email Confirmation**: Supabase's `{{ .ConfirmationURL }}` automatically handles PKCE flow and creates session
+- **Auth Flow**: Registration → Email → Click link → Session created → Redirect to `/auth/confirm` → Check session → Redirect to `/dashboard`
+- **Files Modified**:
+  - `app/auth/confirm/page.tsx` - Simplified to session check only
+  - `contexts/AuthContext.tsx` - Enhanced error handling and logging
+  - `app/api/auth/confirm/route.ts` - Server-side fallback (created but unused)
+
+---
+
+## [2025-10-02 Part 1] - Registration & Email Confirmation Fixes
 
 ### Fixed
 - **Registration RLS Policy Issues**
