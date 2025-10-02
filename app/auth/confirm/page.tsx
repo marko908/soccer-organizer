@@ -46,21 +46,31 @@ function ConfirmEmailContent() {
 
         if (code) {
           console.log('📧 Using PKCE flow with code:', code)
+          console.log('📧 Calling exchangeCodeForSession...')
 
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-          if (error) {
-            console.error('❌ Email confirmation error:', error)
-            console.error('❌ Error details:', JSON.stringify(error, null, 2))
+            console.log('📧 exchangeCodeForSession response - data:', data)
+            console.log('📧 exchangeCodeForSession response - error:', error)
+
+            if (error) {
+              console.error('❌ Email confirmation error:', error)
+              console.error('❌ Error details:', JSON.stringify(error, null, 2))
+              setStatus('error')
+              setErrorMessage(error.message || 'Confirmation link expired or invalid')
+            } else {
+              console.log('✅ Email confirmed successfully!')
+              console.log('✅ User data:', data)
+              setStatus('success')
+              setTimeout(() => {
+                router.push('/dashboard')
+              }, 2000)
+            }
+          } catch (exchangeError: any) {
+            console.error('❌ exchangeCodeForSession threw error:', exchangeError)
             setStatus('error')
-            setErrorMessage(error.message || 'Confirmation link expired or invalid')
-          } else {
-            console.log('✅ Email confirmed successfully!')
-            console.log('✅ User data:', data)
-            setStatus('success')
-            setTimeout(() => {
-              router.push('/dashboard')
-            }, 2000)
+            setErrorMessage(exchangeError.message || 'Failed to exchange code for session')
           }
         } else if (token_hash && type) {
           console.log('📧 Using legacy flow - token_hash:', token_hash, 'type:', type)
