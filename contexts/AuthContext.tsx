@@ -20,7 +20,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (emailOrNickname: string, password: string) => Promise<boolean>
+  login: (email: string, password: string) => Promise<boolean>
   register: (email: string, password: string, fullName: string, nickname: string, phone?: string) => Promise<boolean>
   logout: () => Promise<void>
 }
@@ -111,46 +111,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const login = async (emailOrNickname: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      let email = emailOrNickname
+      console.log('🔐 Logging in with email:', email)
 
-      // Check if input is a nickname (doesn't contain @)
-      if (!emailOrNickname.includes('@')) {
-        // Lookup email by nickname
-        const { data: profile, error: lookupError } = await supabase
-          .from('users')
-          .select('email')
-          .ilike('nickname', emailOrNickname)
-          .single()
-
-        if (lookupError || !profile) {
-          console.error('Nickname not found:', emailOrNickname)
-          return false
-        }
-
-        email = profile.email
-      }
-
-      // Login with email
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
-        console.error('Login error:', error)
+        console.error('❌ Login error:', error)
         return false
       }
 
       if (data.user) {
+        console.log('✅ Login successful:', data.user.email)
         await fetchUserProfile(data.user.id)
         return true
       }
 
       return false
     } catch (error) {
-      console.error('Login failed:', error)
+      console.error('❌ Login failed:', error)
       return false
     }
   }

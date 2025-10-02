@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    emailOrNickname: '',
+    email: '',
     password: '',
   })
 
@@ -41,7 +41,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
     setError('')
 
-    const success = await login(formData.emailOrNickname, formData.password)
+    const success = await login(formData.email, formData.password)
 
     if (success) {
       router.push('/dashboard')
@@ -84,18 +84,18 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="emailOrNickname" className="block text-sm font-medium text-gray-700">
-                Email or Nickname
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                {t('auth.email')}
               </label>
               <input
-                id="emailOrNickname"
-                name="emailOrNickname"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 autoComplete="email"
                 required
                 className="input mt-1"
-                placeholder="your@email.com or nickname"
-                value={formData.emailOrNickname}
+                placeholder="your@email.com"
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
