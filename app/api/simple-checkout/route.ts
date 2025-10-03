@@ -32,9 +32,9 @@ export async function POST(request: NextRequest) {
     const eventResult = await client.query(
       `SELECT
         e.*,
-        COUNT(CASE WHEN p."paymentStatus" = 'succeeded' THEN 1 END) as "paidParticipants"
+        COUNT(CASE WHEN p.payment_status = 'succeeded' THEN 1 END) as "paidParticipants"
       FROM events e
-      LEFT JOIN participants p ON e.id = p."eventId"
+      LEFT JOIN participants p ON e.id = p.event_id
       WHERE e.id = $1
       GROUP BY e.id`,
       [parseInt(eventId)]
