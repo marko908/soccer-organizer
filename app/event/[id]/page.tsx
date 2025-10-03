@@ -115,8 +115,16 @@ export default function EventPage() {
       })
 
       if (response.ok) {
-        const { url } = await response.json()
-        window.location.href = url
+        const data = await response.json()
+
+        // Check if in test mode - if so, redirect immediately
+        if (data.testMode) {
+          console.log('🧪 Test mode: Redirecting to success page')
+          window.location.href = data.url
+        } else {
+          // Production mode: redirect to Stripe checkout
+          window.location.href = data.url
+        }
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to create payment session')

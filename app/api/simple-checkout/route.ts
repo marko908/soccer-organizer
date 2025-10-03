@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+
+// Set to true for testing - bypasses Stripe checkout
+const TEST_MODE = true
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +56,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // TEST MODE: Directly add participant without Stripe checkout
+    if (TEST_MODE) {
+      console.log('🧪 TEST MODE: Adding participant directly (bypassing Stripe)')
+
+      const { error } = await supabaseAdmin
+        .from('participants')
+        .insert({
+          name: participantName,
+          email: participantEmail || null,
+          payment_status: 'succeeded',
+          stripe_payment_intent_id: 'test_mode_' + Date.now(),
+          event_id: parseInt(eventId),
+          user_id: userId || null,
+          avatar_url: avatarUrl || '/default-avatar.svg',
+        })
+
+      if (error) {
+        console.error('Error adding participant in test mode:', error)
+        return NextResponse.json(
+          { error: 'Failed to add participant' },
+          { status: 500 }
+        )
+      }
+
+      console.log(`✅ TEST MODE: Participant ${participantName} added to event ${eventId}`)
+
+      // Return success URL to redirect user
+      return NextResponse.json({
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?success=true`,
+        testMode: true
+      })
+    }
+
+    // PRODUCTION MODE: Normal Stripe checkout flow
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'blik'],
