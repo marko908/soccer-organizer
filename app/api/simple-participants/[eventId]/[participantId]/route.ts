@@ -31,7 +31,7 @@ export async function DELETE(
 
     // Verify the event belongs to this organizer
     const eventCheck = await client.query(
-      'SELECT id FROM events WHERE id = $1 AND "organizerId" = $2',
+      'SELECT id FROM events WHERE id = $1 AND organizer_id = $2',
       [eventId, organizerId]
     )
 
@@ -45,7 +45,7 @@ export async function DELETE(
 
     // Delete participant
     const result = await client.query(
-      'DELETE FROM participants WHERE id = $1 AND "eventId" = $2 RETURNING id',
+      'DELETE FROM participants WHERE id = $1 AND event_id = $2 RETURNING id',
       [participantId, eventId]
     )
 

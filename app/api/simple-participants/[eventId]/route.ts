@@ -40,7 +40,7 @@ export async function POST(
 
     // Verify the event belongs to this organizer
     const eventCheck = await client.query(
-      'SELECT id FROM events WHERE id = $1 AND "organizerId" = $2',
+      'SELECT id FROM events WHERE id = $1 AND organizer_id = $2',
       [eventId, organizerId]
     )
 
@@ -54,9 +54,9 @@ export async function POST(
 
     // Add participant with 'cash' payment status
     const result = await client.query(
-      `INSERT INTO participants (name, email, "eventId", "paymentStatus", "createdAt", "updatedAt")
+      `INSERT INTO participants (name, email, event_id, payment_status, created_at, updated_at)
        VALUES ($1, $2, $3, 'succeeded', NOW(), NOW())
-       RETURNING id, name, email, "paymentStatus", "createdAt"`,
+       RETURNING id, name, email, payment_status, created_at`,
       [name.trim(), email?.trim() || null, eventId]
     )
 
