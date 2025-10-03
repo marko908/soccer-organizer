@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { getAuthUser } from '@/lib/auth'
+import { getSupabaseUser } from '@/lib/supabase-server'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getAuthUser(request)
+    const user = await getSupabaseUser()
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },

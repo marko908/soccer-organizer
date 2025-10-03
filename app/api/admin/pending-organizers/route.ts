@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { getAuthUser } from '@/lib/simple-auth'
+import { getSupabaseUser } from '@/lib/supabase-server'
 
 export async function GET(request: NextRequest) {
   try {
     // Admin authentication required
-    const user = await getAuthUser(request)
+    const user = await getSupabaseUser()
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { getAuthUser } from '@/lib/simple-auth'
+import { getSupabaseUser } from '@/lib/supabase-server'
 
 export async function POST(request: NextRequest) {
   try {
     // Admin authentication required
-    const user = await getAuthUser(request)
+    const user = await getSupabaseUser()
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Admin access required' },

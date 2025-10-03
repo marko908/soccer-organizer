@@ -1,23 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { getSupabaseUser } from '@/lib/supabase-server'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { eventId: string } }
 ) {
   try {
-    // Get user from JWT token
-    const token = request.cookies.get('auth-token')?.value
+    // Get user from Supabase session
+    const user = await getSupabaseUser()
 
-    if (!token) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
-    const organizerId = decoded.id
+    const organizerId = user.id
     const eventId = parseInt(params.eventId)
 
     const body = await request.json()
