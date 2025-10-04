@@ -22,7 +22,7 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, refreshUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -92,8 +92,8 @@ export default function ProfilePage() {
         setProfileData(data.profile)
         setMessage({ type: 'success', text: 'Profile updated successfully!' })
         setEditMode(false)
-        // Refresh auth context
-        window.location.reload()
+        // Refresh auth context to update user data
+        await refreshUser()
       } else {
         setMessage({ type: 'error', text: data.error || 'Failed to update profile' })
       }
