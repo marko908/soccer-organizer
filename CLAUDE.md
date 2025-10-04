@@ -3,3 +3,6 @@
 - Testing URL for this app is https://soccer-organizer.vercel.app/
 - Always show where to paste API keys, and tell the user to not paste them in the chat
 - If the user needs to use SQL, let the user copy and paste it from the chat - don't create a dedicated file to copy the code. Always explain what it does.
+- After every major code change make an update in CHANGELOG.md
+- Explain every step briefly
+- Always send link to the dev server that the project is running on at this momment

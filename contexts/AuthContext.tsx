@@ -52,11 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out')
         setUser(null)
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        console.log('✅ User signed in or token refreshed')
+      } else if (event === 'SIGNED_IN') {
+        console.log('✅ User signed in')
         if (session?.user) {
           await fetchUserProfile(session.user.id)
         }
+      } else if (event === 'TOKEN_REFRESHED') {
+        // Token refresh happens automatically (e.g., tab switching)
+        // Don't refetch profile - user data doesn't change on token refresh
+        console.log('🔄 Token refreshed (skipping profile refetch)')
       } else if (session?.user) {
         await fetchUserProfile(session.user.id)
       } else {
@@ -172,12 +176,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (sessionError) {
         console.error('❌ Session error:', sessionError)
         setUser(null)
+        setLoading(false)
         return
       }
 
       if (session?.user) {
         console.log('✅ Session found:', session.user.email)
         console.log('🔑 User ID:', session.user.id)
+        // Wait for profile fetch to complete before setting loading=false
         await fetchUserProfile(session.user.id)
       } else {
         console.log('❌ No session found')
