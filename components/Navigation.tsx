@@ -58,7 +58,12 @@ export default function Navigation() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {!loading && (
+            {loading ? (
+              /* Loading skeleton - prevents flash of login buttons */
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+              </div>
+            ) : (
               <>
                 {user ? (
                   <>

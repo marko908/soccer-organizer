@@ -28,26 +28,30 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            {!loading && (
-              user ? (
-                <>
-                  <Link href="/dashboard" className="btn-primary">
-                    {t('home.goToDashboard')}
-                  </Link>
-                  <Link href="/create" className="btn-secondary">
-                    {t('home.createEvent')}
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href="/register" className="btn-primary">
-                    {t('home.getStartedFree')}
-                  </Link>
-                  <Link href="/login" className="btn-secondary">
-                    {t('home.signIn')}
-                  </Link>
-                </>
-              )
+            {loading ? (
+              /* Loading skeleton */
+              <div className="flex gap-4">
+                <div className="h-12 w-40 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="h-12 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
+              </div>
+            ) : user ? (
+              <>
+                <Link href="/dashboard" className="btn-primary">
+                  {t('home.goToDashboard')}
+                </Link>
+                <Link href="/create" className="btn-secondary">
+                  {t('home.createEvent')}
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/register" className="btn-primary">
+                  {t('home.getStartedFree')}
+                </Link>
+                <Link href="/login" className="btn-secondary">
+                  {t('home.signIn')}
+                </Link>
+              </>
             )}
           </div>
 

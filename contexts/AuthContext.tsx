@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 
 interface User {
@@ -31,6 +31,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const fetchingRef = useRef(false)
+  const currentUserIdRef = useRef<string | null>(null)
+  const initialLoadComplete = useRef(false)
 
   useEffect(() => {
     checkAuth()
@@ -39,6 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Supabase automatically refreshes tokens, no manual refresh needed
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state change:', event, session?.user?.email)
+
+      // Skip SIGNED_IN and INITIAL_SESSION on first load - checkAuth handles it
+      if (!initialLoadComplete.current && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        console.log('⏭️ Skipping initial auth event, checkAuth will handle it')
+        return
+      }
 
       if (event === 'SIGNED_OUT') {
         console.log('👋 User signed out')
@@ -60,25 +69,73 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, retryCount = 0) => {
+    // Prevent concurrent fetches for the same user
+    if (fetchingRef.current && currentUserIdRef.current === userId) {
+      console.log('⏭️ Skipping duplicate fetch for:', userId)
+      return
+    }
+
+    fetchingRef.current = true
+    currentUserIdRef.current = userId
+
     try {
-      console.log('🔍 Fetching profile for user:', userId)
-      const { data: profile, error } = await supabase
+      const startTime = performance.now()
+      console.log(`🔍 Fetching profile for user: ${userId} (attempt ${retryCount + 1})`)
+
+      // Timeout after 3 seconds
+      const queryPromise = supabase
         .from('users')
         .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
         .eq('id', userId)
         .single()
 
+      const timeoutPromise = new Promise<{ data: null, error: any }>((_, reject) =>
+        setTimeout(() => reject(new Error('Query timeout')), 3000)
+      )
+
+      const result = await Promise.race([queryPromise, timeoutPromise])
+        .catch((err) => {
+          return { data: null, error: err }
+        })
+
+      const { data: profile, error } = result
+      const queryTime = performance.now() - startTime
+      console.log(`⏱️ Query took ${queryTime.toFixed(0)}ms`)
+
       if (error) {
-        console.error('❌ Error fetching profile:', error)
+        // Retry on timeout or error (max 2 retries)
+        if (retryCount < 2) {
+          console.warn(`⚠️ Query failed: ${error.message}, retrying... (${retryCount + 1}/2)`)
+          fetchingRef.current = false
+          await new Promise(resolve => setTimeout(resolve, 100)) // Wait 100ms before retry
+          return fetchUserProfile(userId, retryCount + 1)
+        }
+
+        console.error('❌ Error fetching profile after 3 attempts:', error.message)
         setUser(null)
         return
       }
 
+      if (!profile) {
+        console.error('⚠️ Query succeeded but profile is null/undefined')
+        console.error('⚠️ This usually means RLS is blocking the query')
+        setUser(null)
+        return
+      }
+
+      console.log('🔑 Getting auth user...')
       const { data: { user: authUser } } = await supabase.auth.getUser()
+      console.log('🔑 Auth user:', authUser?.email)
 
       if (authUser && profile) {
         console.log('✅ Profile loaded:', profile.nickname)
+        console.log('✅ Setting user state with data:', {
+          id: authUser.id,
+          email: profile.email,
+          nickname: profile.nickname,
+          role: profile.role,
+        })
         setUser({
           id: authUser.id,
           email: profile.email || authUser.email!,
@@ -92,26 +149,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           height: profile.height,
           canCreateEvents: profile.can_create_events || false,
         })
+        console.log('✅ User state updated successfully')
       } else {
         console.log('⚠️ No profile or auth user found')
+        console.log('⚠️ authUser:', !!authUser, 'profile:', !!profile)
         setUser(null)
       }
     } catch (error) {
       console.error('❌ Failed to fetch user profile:', error)
+      console.error('❌ Exception details:', error)
       setUser(null)
+    } finally {
+      fetchingRef.current = false
     }
   }
 
   const checkAuth = async () => {
     try {
       console.log('🔐 Checking auth...')
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError) {
+        console.error('❌ Session error:', sessionError)
+        setUser(null)
+        return
+      }
 
       if (session?.user) {
         console.log('✅ Session found:', session.user.email)
+        console.log('🔑 User ID:', session.user.id)
         await fetchUserProfile(session.user.id)
       } else {
         console.log('❌ No session found')
+        console.log('🍪 Cookies:', document.cookie)
         setUser(null)
       }
     } catch (error) {
@@ -120,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       console.log('✅ Auth check complete, loading = false')
       setLoading(false)
+      initialLoadComplete.current = true
     }
   }
 
