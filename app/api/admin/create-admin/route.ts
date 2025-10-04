@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: NextRequest) {
   try {
     // Check if admin already exists
-    const { data: existingAdmin } = await supabase
+    const { data: existingAdmin } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('role', 'ADMIN')
@@ -37,54 +35,59 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    // Create user with Supabase Auth (using admin client to bypass email confirmation)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: name,
+      },
+    })
 
-    // Create admin user
-    const { data: admin, error } = await supabase
+    if (authError) {
+      console.error('Supabase Auth error:', authError)
+      throw authError
+    }
+
+    if (!authData.user) {
+      throw new Error('Failed to create auth user')
+    }
+
+    // Create user profile in users table with ADMIN role
+    const { error: profileError } = await supabaseAdmin
       .from('users')
       .insert({
-        email,
-        password: hashedPassword,
-        name,
+        id: authData.user.id,
+        email: authData.user.email!,
+        full_name: name,
+        nickname: name.toLowerCase().replace(/\s+/g, '_'),
         role: 'ADMIN',
         email_verified: true,
-        phone_verified: true,
-        admin_approved: true,
-        approved_at: new Date().toISOString(),
-        approved_by: 'system'
+        can_create_events: true,
+        avatar_url: '/default-avatar.svg',
       })
-      .select('id, email, name, role')
-      .single()
 
-    if (error) throw error
+    if (profileError) {
+      console.error('Profile creation error:', profileError)
+      // Try to clean up the auth user
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
+      throw profileError
+    }
 
-    // Create JWT token
-    const token = jwt.sign(
-      { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    )
-
-    // Set cookie
-    const response = NextResponse.json({
-      message: 'Admin user created successfully',
-      user: admin,
-      token
+    return NextResponse.json({
+      message: 'Admin user created successfully. You can now log in.',
+      user: {
+        id: authData.user.id,
+        email: authData.user.email,
+        name,
+        role: 'ADMIN',
+      },
     })
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    })
-
-    return response
   } catch (error: any) {
     console.error('Admin creation error:', error)
     return NextResponse.json(
-      { error: error.message },
+      { error: error.message || 'Failed to create admin user' },
       { status: 500 }
     )
   }

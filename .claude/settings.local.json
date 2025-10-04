@@ -15,7 +15,9 @@
       "Bash(timeout 30 npm run dev)",
       "Bash(git log:*)",
       "Bash(find:*)",
-      "Bash(git revert:*)"
+      "Bash(git revert:*)",
+      "Bash(timeout 5 npm run dev)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
