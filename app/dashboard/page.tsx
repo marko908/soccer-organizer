@@ -18,11 +18,17 @@ interface Event {
   paidParticipants: number
 }
 
+interface ConnectStatus {
+  connected: boolean
+  onboardingComplete: boolean
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [events, setEvents] = useState<Event[]>([])
   const [eventsLoading, setEventsLoading] = useState(true)
+  const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -33,6 +39,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchEvents()
+      checkConnectStatus()
     }
   }, [user])
 
@@ -47,6 +54,18 @@ export default function Dashboard() {
       console.error('Error fetching events:', error)
     } finally {
       setEventsLoading(false)
+    }
+  }
+
+  const checkConnectStatus = async () => {
+    try {
+      const response = await fetch('/api/connect/status')
+      if (response.ok) {
+        const data = await response.json()
+        setConnectStatus(data)
+      }
+    } catch (error) {
+      console.error('Error checking connect status:', error)
     }
   }
 
@@ -75,6 +94,26 @@ export default function Dashboard() {
           </Link>
         )}
       </div>
+
+      {/* Stripe Connect status banner */}
+      {user.canCreateEvents && connectStatus && !connectStatus.onboardingComplete && (
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-4 rounded-lg">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start">
+              <div className="text-2xl mr-3">💳</div>
+              <div>
+                <h3 className="font-semibold mb-1">Connect Your Stripe Account</h3>
+                <p className="text-sm mb-3">
+                  Set up payment processing to receive money from players when they join your events.
+                </p>
+                <Link href="/connect" className="btn-primary text-sm inline-block">
+                  Connect Stripe Account
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="flex justify-between items-center mb-6">

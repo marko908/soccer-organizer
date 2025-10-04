@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
-// Set to true for testing - bypasses Stripe checkout
-const TEST_MODE = true
-
 export async function POST(request: NextRequest) {
   try {
     console.log('🔵 Checkout API called')
@@ -20,83 +17,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
+    // Get event details with organizer info using Supabase
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from('events')
+      .select(`
+        *,
+        organizer:users!organizer_id (
+          stripe_account_id,
+          stripe_onboarding_complete
+        )
+      `)
+      .eq('id', parseInt(eventId))
+      .single()
 
-    await client.connect()
-
-    // Get event with participant count
-    const eventResult = await client.query(
-      `SELECT
-        e.*,
-        COUNT(CASE WHEN p.payment_status = 'succeeded' THEN 1 END) as "paidParticipants"
-      FROM events e
-      LEFT JOIN participants p ON e.id = p.event_id
-      WHERE e.id = $1
-      GROUP BY e.id`,
-      [parseInt(eventId)]
-    )
-
-    await client.end()
-
-    if (eventResult.rows.length === 0) {
+    if (eventError || !event) {
+      console.error('❌ Event not found:', eventError)
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
       )
     }
 
-    const event = eventResult.rows[0]
-    const paidParticipants = parseInt(event.paidParticipants) || 0
+    // Check if organizer has completed Stripe Connect onboarding
+    const organizer = Array.isArray(event.organizer) ? event.organizer[0] : event.organizer
+    if (!organizer?.stripe_account_id || !organizer?.stripe_onboarding_complete) {
+      return NextResponse.json(
+        { error: 'Event organizer has not completed payment setup' },
+        { status: 400 }
+      )
+    }
 
-    if (paidParticipants >= event.maxPlayers) {
+    // Count paid participants
+    const { count: paidParticipants } = await supabaseAdmin
+      .from('participants')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', parseInt(eventId))
+      .eq('payment_status', 'succeeded')
+
+    if ((paidParticipants || 0) >= event.max_players) {
       return NextResponse.json(
         { error: 'Event is full' },
         { status: 400 }
       )
     }
 
-    // TEST MODE: Directly add participant without Stripe checkout
-    if (TEST_MODE) {
-      console.log('🧪 TEST MODE: Adding participant directly (bypassing Stripe)')
-
-      const insertData = {
-        name: participantName,
-        email: participantEmail || null,
-        payment_status: 'succeeded',
-        stripe_payment_intent_id: 'test_mode_' + Date.now(),
-        event_id: parseInt(eventId),
-        user_id: userId || null,
-        avatar_url: avatarUrl || '/default-avatar.svg',
-      }
-      console.log('📝 Insert data:', insertData)
-
-      const { error } = await supabaseAdmin
-        .from('participants')
-        .insert(insertData)
-
-      if (error) {
-        console.error('❌ Error adding participant in test mode:', error)
-        console.error('❌ Error details:', JSON.stringify(error, null, 2))
-        return NextResponse.json(
-          { error: `Failed to add participant: ${error.message}` },
-          { status: 500 }
-        )
-      }
-
-      console.log(`✅ TEST MODE: Participant ${participantName} added to event ${eventId}`)
-
-      // Return success URL to redirect user
-      return NextResponse.json({
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?success=true`,
-        testMode: true
-      })
-    }
-
-    // PRODUCTION MODE: Normal Stripe checkout flow
+    // Create Stripe Checkout session with Connect
     const stripe = getStripe()
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'blik'],
@@ -108,7 +73,7 @@ export async function POST(request: NextRequest) {
               name: `${event.name} - Soccer Game`,
               description: `${event.location} on ${new Date(event.date).toLocaleDateString()}`,
             },
-            unit_amount: Math.round(event.pricePerPlayer * 100), // Convert to cents
+            unit_amount: Math.round(parseFloat(event.price_per_player) * 100), // Convert to cents
           },
           quantity: 1,
         },
@@ -116,6 +81,14 @@ export async function POST(request: NextRequest) {
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/event/${eventId}?canceled=true`,
+      payment_intent_data: {
+        // Transfer funds to connected account (organizer)
+        transfer_data: {
+          destination: organizer.stripe_account_id,
+        },
+        // Optional: Platform fee (5% of payment)
+        // application_fee_amount: Math.round(parseFloat(event.price_per_player) * 100 * 0.05),
+      },
       metadata: {
         eventId: eventId.toString(),
         participantName,
@@ -124,6 +97,8 @@ export async function POST(request: NextRequest) {
         avatarUrl: avatarUrl || '/default-avatar.svg',
       },
     })
+
+    console.log(`✅ Checkout session created for event ${eventId}, organizer: ${organizer.stripe_account_id}`)
 
     return NextResponse.json({ url: session.url })
   } catch (error: any) {
