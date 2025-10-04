@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Fix Infinite Loop Crash in AuthContext
+
+### Fixed
+- **Critical App Crash Bug** 🚨
+  - Fixed infinite loop in authentication flow causing browser crashes
+  - Issue: Multiple `setLoading(false)` calls in different code paths created race conditions
+  - Solution: Consolidated all loading state updates into single `finally` block at `contexts/AuthContext.tsx:196-199`
+  - Impact: Eliminates state update loops that caused app to freeze and crash
+
+---
+
 ## [2025-10-04] - Auth Cookie Handling & Performance Fixes
 
 ### Fixed
