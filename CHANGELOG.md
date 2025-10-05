@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Public Events List and Improved Post-Payment Navigation
+
+### Added
+- **Public Events List Page** 📋
+  - New `/events` route showing all upcoming public events
+  - Displays event cards with key information: name, date, location, price, organizer
+  - Shows available spots with color-coded status (green/orange/red)
+  - Organizer profile preview with avatar and nickname
+  - Fully responsive grid layout (1/2/3 columns)
+  - Files: `app/events/page.tsx`, `app/api/public-events/route.ts`
+
+- **Browse Events Link in Navigation** 🔗
+  - Added "Browse Events" link to navigation bar (visible to all users)
+  - Accessible from anywhere in the app
+  - Files: `components/Navigation.tsx:70-71, 165-167`
+
+### Changed
+- **Post-Payment Navigation** 🎉
+  - Replaced back button with "← Back to Events List" button after successful payment
+  - Prevents users from accidentally navigating back to Stripe payment page
+  - Green button in success message banner redirects to `/events`
+  - Files: `app/event/[id]/page.tsx:178-191`
+
+---
+
 ## [2025-10-05] - Navigation Improvements for Profile and Event Pages
 
 ### Added

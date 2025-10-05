@@ -67,6 +67,9 @@ export default function Navigation() {
               <>
                 {user ? (
                   <>
+                    <Link href="/events" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                      Browse Events
+                    </Link>
                     {user.canCreateEvents && (
                       <Link href="/create" className="btn-primary text-sm">
                         {t('dashboard.createEvent')}
@@ -159,6 +162,9 @@ export default function Navigation() {
                   </>
                 ) : (
                   <>
+                    <Link href="/events" className="text-gray-700 hover:text-primary-600 font-medium transition-colors">
+                      Browse Events
+                    </Link>
                     <Link href="/login" className="text-gray-600 hover:text-gray-900">
                       {t('nav.login')}
                     </Link>

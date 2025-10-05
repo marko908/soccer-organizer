@@ -177,7 +177,16 @@ export default function EventPage() {
     <div className="max-w-4xl mx-auto">
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
-          🎉 Payment successful! You've secured your spot in the game.
+          <div className="flex items-center justify-between">
+            <span>🎉 Payment successful! You've secured your spot in the game.</span>
+            <Link
+              href="/events"
+              className="ml-4 flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm whitespace-nowrap"
+            >
+              <span>←</span>
+              <span>Back to Events List</span>
+            </Link>
+          </div>
         </div>
       )}
 
