@@ -24,12 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Flash of Logged-Out UI (FOUC)** ⚡
   - Fixed brief flash of logged-out interface on page refresh
-  - Issue: `checkAuth` completing before Supabase session loaded from cookies
-  - Solution 1: Added 50ms delay before getSession to let Supabase initialize
-  - Solution 2: Retry getSession once after 100ms if no session found initially
-  - Solution 3: Refactored `fetchUserProfile` to return user data instead of setting state directly
-  - Solution 4: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
-  - Impact: Gives Supabase time to read session from cookies before showing UI
+  - Root cause: React StrictMode runs `checkAuth` twice - second call returned null while first was fetching
+  - Solution: Prevent duplicate `checkAuth` calls with ref flag (`contexts/AuthContext.tsx:37-45`)
+  - Also added 50ms delay + retry for slow Supabase cookie reads
+  - Full-page loading skeleton prevents any UI flash (`app/page.tsx:12-36`)
+  - Impact: Only one checkAuth runs, eliminating the flash completely
 
 ### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨

@@ -34,8 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchingRef = useRef(false)
   const currentUserIdRef = useRef<string | null>(null)
   const initialLoadComplete = useRef(false)
+  const checkAuthRunning = useRef(false)
 
   useEffect(() => {
+    // Prevent duplicate checkAuth calls (React StrictMode runs effects twice)
+    if (checkAuthRunning.current) {
+      console.log('⏭️ checkAuth already running, skipping duplicate call')
+      return
+    }
+    checkAuthRunning.current = true
     checkAuth()
 
     // Listen for auth state changes
