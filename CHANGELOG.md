@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Privacy & UX Improvements
+
+### Changed
+- **Participant Name Display Format** 👤
+  - Removed user choice for name display format
+  - Enforced format: "Imię Nazwisko @nickname" for all logged-in users
+  - Auto-fills participant name from user profile in this exact format
+  - Applies to both public event page and management page
+  - Files: `app/event/[id]/page.tsx:48-55`
+
+- **Email Privacy** 🔒
+  - Removed email display from all participant lists
+  - Email is collected only for marketing purposes, never shown publicly
+  - Removed from public event page participant list
+  - Removed from organizer management page participant list
+  - Files: `app/event/[id]/page.tsx:261-266`, `app/event/[id]/manage/page.tsx:219-224`
+
+### Added
+- **Copy Event Link Button** 🔗
+  - Added "Copy Link" button to event page
+  - One-click copy event URL to clipboard
+  - Visual feedback: "Skopiowano!" / "Copied!" (2 second duration)
+  - Bilingual support (PL/EN)
+  - Files: `app/event/[id]/page.tsx:58-66, 194-202`, `contexts/LanguageContext.tsx:195-196, 377-378`
+
+---
+
 ## [2025-10-05] - Fix Tab-Switch Logout & Flash of Logged-Out UI
 
 ### Fixed

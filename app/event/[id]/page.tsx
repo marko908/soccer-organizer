@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { formatCurrency, formatDateTime, formatDateTimeShort } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
 
 interface Participant {
@@ -32,6 +33,7 @@ export default function EventPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
   const [paymentLoading, setPaymentLoading] = useState(false)
@@ -40,31 +42,26 @@ export default function EventPage() {
     email: ''
   })
   const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [nameDisplayOption, setNameDisplayOption] = useState<'fullName' | 'nickname' | 'both'>('fullName')
+  const [linkCopied, setLinkCopied] = useState(false)
 
   // Auto-fill name when user is logged in
   useEffect(() => {
     if (user) {
       setParticipantData(prev => ({
         ...prev,
-        name: getDisplayName(),
+        name: `${user.fullName} @${user.nickname}`,
         email: prev.email || user.email
       }))
     }
-  }, [user, nameDisplayOption])
+  }, [user])
 
-  const getDisplayName = () => {
-    if (!user) return ''
-
-    switch (nameDisplayOption) {
-      case 'fullName':
-        return user.fullName
-      case 'nickname':
-        return user.nickname
-      case 'both':
-        return `${user.fullName} (@${user.nickname})`
-      default:
-        return user.fullName
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy link:', error)
     }
   }
 
@@ -193,6 +190,16 @@ export default function EventPage() {
                 <span className="text-lg">💰</span>
                 <span className="ml-2">{formatCurrency(event.pricePerPlayer)} per player</span>
               </div>
+
+              <button
+                onClick={handleCopyLink}
+                className="mt-4 flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                <span className="text-lg">🔗</span>
+                <span className="text-sm font-medium">
+                  {linkCopied ? t('event.copied') : t('event.copyLink')}
+                </span>
+              </button>
             </div>
           </div>
 
@@ -263,9 +270,6 @@ export default function EventPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-gray-900">{participant.name}</div>
-                    {participant.email && (
-                      <div className="text-sm text-gray-500">{participant.email}</div>
-                    )}
                   </div>
                   <div className="text-xs text-gray-400">
                     ✓ Confirmed
@@ -297,49 +301,6 @@ export default function EventPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {user && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Display Name As
-                      </label>
-                      <div className="space-y-2">
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="nameDisplay"
-                            value="fullName"
-                            checked={nameDisplayOption === 'fullName'}
-                            onChange={(e) => setNameDisplayOption(e.target.value as 'fullName')}
-                            className="mr-2"
-                          />
-                          <span className="text-sm text-gray-700">{user.fullName}</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="nameDisplay"
-                            value="nickname"
-                            checked={nameDisplayOption === 'nickname'}
-                            onChange={(e) => setNameDisplayOption(e.target.value as 'nickname')}
-                            className="mr-2"
-                          />
-                          <span className="text-sm text-gray-700">@{user.nickname}</span>
-                        </label>
-                        <label className="flex items-center">
-                          <input
-                            type="radio"
-                            name="nameDisplay"
-                            value="both"
-                            checked={nameDisplayOption === 'both'}
-                            onChange={(e) => setNameDisplayOption(e.target.value as 'both')}
-                            className="mr-2"
-                          />
-                          <span className="text-sm text-gray-700">{user.fullName} (@{user.nickname})</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                       Your Name *
@@ -359,7 +320,7 @@ export default function EventPage() {
                     />
                     {user && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Auto-filled from your profile. Select a different display option above to change.
+                        Auto-filled from your profile.
                       </p>
                     )}
                   </div>

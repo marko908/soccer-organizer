@@ -192,6 +192,8 @@ const translations: Record<Language, Record<string, string>> = {
     'event.allSpotsTaken': 'Wszystkie miejsca zostały zajęte w tej grze.',
     'event.confirmed': '✓ Potwierdzony',
     'event.enterName': 'Proszę wprowadzić swoje imię',
+    'event.copyLink': 'Skopiuj link',
+    'event.copied': 'Skopiowano!',
 
     // Manage Event
     'manage.loading': 'Ładowanie...',
@@ -372,6 +374,8 @@ const translations: Record<Language, Record<string, string>> = {
     'event.allSpotsTaken': 'All spots have been taken for this game.',
     'event.confirmed': '✓ Confirmed',
     'event.enterName': 'Please enter your name',
+    'event.copyLink': 'Copy Link',
+    'event.copied': 'Copied!',
 
     // Manage Event
     'manage.loading': 'Loading...',

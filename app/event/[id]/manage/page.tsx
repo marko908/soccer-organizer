@@ -218,9 +218,6 @@ export default function ManageEventPage() {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">{participant.name}</div>
-                      {participant.email && (
-                        <div className="text-sm text-gray-500">{participant.email}</div>
-                      )}
                       <div className="text-xs text-gray-400">
                         Added: {new Date(participant.createdAt).toLocaleDateString('pl-PL')}
                       </div>
