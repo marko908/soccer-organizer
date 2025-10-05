@@ -43,17 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state change:', event, session?.user?.email)
 
-      // Skip auth events on first load ONLY if checkAuth hasn't completed yet
+      // Skip SIGNED_IN and INITIAL_SESSION on first load - checkAuth handles it
       if (!initialLoadComplete.current && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-        console.log('⏭️ Skipping initial auth event - checkAuth is handling it')
-        return
-      }
-
-      // If checkAuth already completed but returned null user, handle INITIAL_SESSION
-      if (event === 'INITIAL_SESSION' && session?.user && !user) {
-        console.log('🔧 INITIAL_SESSION after checkAuth - fetching profile')
-        const userData = await fetchUserProfile(session.user.id)
-        setUser(userData)
+        console.log('⏭️ Skipping initial auth event, checkAuth will handle it')
         return
       }
 
@@ -87,15 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const fetchUserProfile = async (userId: string, retryCount = 0): Promise<User | null> => {
-    // Prevent concurrent fetches for the same user - wait for existing fetch to complete
+    // Prevent concurrent fetches for the same user
     if (fetchingRef.current && currentUserIdRef.current === userId) {
-      console.log('⏭️ Another fetch in progress, waiting...')
-      // Wait for the current fetch to complete
-      while (fetchingRef.current) {
-        await new Promise(resolve => setTimeout(resolve, 50))
-      }
-      console.log('⏭️ Fetch completed, returning current user state')
-      return user
+      console.log('⏭️ Skipping duplicate fetch for:', userId)
+      return user // Return existing user
     }
 
     fetchingRef.current = true
