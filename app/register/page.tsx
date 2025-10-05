@@ -18,7 +18,8 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     nickname: '',
     email: '',
     phone: '',
@@ -57,7 +58,8 @@ export default function RegisterPage() {
       return
     }
 
-    const success = await register(formData.email, formData.password, formData.fullName, formData.nickname, formData.phone)
+    const fullName = `${formData.firstName.trim()} ${formData.lastName.trim()}`
+    const success = await register(formData.email, formData.password, fullName, formData.nickname, formData.phone)
 
     if (success) {
       setShowSuccess(true)
@@ -139,21 +141,40 @@ export default function RegisterPage() {
           )}
 
           <div className="space-y-4">
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
-                Full Name *
-              </label>
-              <input
-                id="fullName"
-                name="fullName"
-                type="text"
-                autoComplete="name"
-                required
-                className="input mt-1"
-                placeholder="John Doe"
-                value={formData.fullName}
-                onChange={handleChange}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  First Name *
+                </label>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  required
+                  className="input mt-1"
+                  placeholder="Jan"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Last Name *
+                </label>
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  required
+                  className="input mt-1"
+                  placeholder="Kowalski"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
             <div>

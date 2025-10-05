@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Registration UX Improvement
+
+### Changed
+- **Split Full Name Field in Registration** 📝
+  - Changed single "Full Name" field to separate "First Name" and "Last Name" fields
+  - Two smaller fields are less intimidating and increase completion rate
+  - Side-by-side layout using grid (2 columns on desktop, stacked on mobile)
+  - Polish placeholders: "Jan" and "Kowalski"
+  - Both fields required with proper HTML5 autocomplete attributes
+  - Combined internally as `firstName + ' ' + lastName` before saving
+  - Files: `app/register/page.tsx:20-28, 61-62, 144-178`, `contexts/LanguageContext.tsx:119-120, 303-304`
+
+---
+
 ## [2025-10-05] - Privacy & UX Improvements
 
 ### Changed
