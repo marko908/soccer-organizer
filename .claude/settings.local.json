@@ -19,7 +19,14 @@
       "Bash(timeout 5 npm run dev)",
       "Bash(git rm:*)",
       "Bash(curl:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(stripe:*)",
+      "Bash(scoop:*)",
+      "Bash(unzip:*)",
+      "Bash(chmod:*)",
+      "Bash(./stripe.exe --version)",
+      "Bash(./stripe.exe listen:*)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

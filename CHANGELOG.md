@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Fix Stripe Payment Redirect URL
+
+### Fixed
+- **Stripe Payment Redirect Issue** 🔗
+  - Issue: After successful Stripe payment, redirect to `localhost:3004` failed with ERR_CONNECTION_REFUSED
+  - Root cause: `NEXT_PUBLIC_BASE_URL` in `.env.local` was set to `http://localhost:3000` but dev server runs on port 3004
+  - Solution: Updated `NEXT_PUBLIC_BASE_URL` to `http://localhost:3004` to match actual dev server port
+  - Stripe success/cancel URLs now redirect correctly after payment
+  - Files: `.env.local:12`, `app/api/simple-checkout/route.ts:82-83`
+
+### Changed
+- **Environment Configuration** ⚙️
+  - Updated `NEXT_PUBLIC_BASE_URL` from `http://localhost:3000` to `http://localhost:3004`
+  - Ensures Stripe redirects work correctly with local development server
+  - Reminder: Restart dev server after changing environment variables
+
+---
+
 ## [2025-10-05] - Restrict Stripe Participant Removal to Admins
 
 ### Changed
