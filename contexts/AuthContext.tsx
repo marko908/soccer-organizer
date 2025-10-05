@@ -169,37 +169,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const checkAuth = async () => {
+    let userData: User | null = null
+
     try {
       console.log('🔐 Checking auth...')
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
       if (sessionError) {
         console.error('❌ Session error:', sessionError)
-        setUser(null)
-        setLoading(false)
-        return
-      }
-
-      if (session?.user) {
+        userData = null
+      } else if (session?.user) {
         console.log('✅ Session found:', session.user.email)
         console.log('🔑 User ID:', session.user.id)
         // Fetch profile and get user data
-        const userData = await fetchUserProfile(session.user.id)
-        // Set user and loading together to prevent flash
-        setUser(userData)
-        setLoading(false)
+        userData = await fetchUserProfile(session.user.id)
       } else {
         console.log('❌ No session found')
         console.log('🍪 Cookies:', document.cookie)
-        setUser(null)
-        setLoading(false)
+        userData = null
       }
     } catch (error) {
       console.error('❌ Auth check failed:', error)
-      setUser(null)
-      setLoading(false)
+      userData = null
     } finally {
-      console.log('✅ Auth check complete')
+      // Set user first, then loading - React 18 batches these automatically
+      console.log('✅ Auth check complete, userData:', userData?.nickname || 'null')
+      setUser(userData)
+      setLoading(false)
       initialLoadComplete.current = true
     }
   }
