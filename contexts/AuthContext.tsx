@@ -79,17 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const fetchUserProfile = async (userId: string, retryCount = 0): Promise<User | null> => {
-    // If already fetching the same user, wait for that fetch to complete instead of starting a new one
+    // Prevent concurrent fetches for the same user
     if (fetchingRef.current && currentUserIdRef.current === userId) {
-      console.log('⏭️ Fetch already in progress for:', userId, '- waiting for completion...')
-      // Wait for the ongoing fetch to complete (max 15 seconds)
-      let waited = 0
-      while (fetchingRef.current && waited < 15000) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-        waited += 100
-      }
-      console.log('✅ Ongoing fetch completed, returning current user:', user?.nickname || 'null')
-      return user
+      console.log('⏭️ Skipping duplicate fetch for:', userId)
+      return user // Return existing user
     }
 
     fetchingRef.current = true
@@ -180,7 +173,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       console.log('🔐 Checking auth...')
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      // Small delay to let Supabase initialize session from cookies
+      await new Promise(resolve => setTimeout(resolve, 50))
+
+      let { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      // If no session found, wait a bit and retry once (for slow cookie reads)
+      if (!session && !sessionError) {
+        console.log('⏳ No session yet, waiting 100ms and retrying...')
+        await new Promise(resolve => setTimeout(resolve, 100))
+        const retry = await supabase.auth.getSession()
+        session = retry.data.session
+        sessionError = retry.error
+      }
 
       if (sessionError) {
         console.error('❌ Session error:', sessionError)
@@ -191,7 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Fetch profile and get user data
         userData = await fetchUserProfile(session.user.id)
       } else {
-        console.log('❌ No session found')
+        console.log('❌ No session found after retry')
         console.log('🍪 Cookies:', document.cookie)
         userData = null
       }

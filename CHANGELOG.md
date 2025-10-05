@@ -24,11 +24,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Flash of Logged-Out UI (FOUC)** ⚡
   - Fixed brief flash of logged-out interface on page refresh
-  - Issue: Race condition - `loading` set to false before `user` state updated
-  - Solution 1: Refactored `fetchUserProfile` to return user data instead of setting state directly
-  - Solution 2: Set both `user` and `loading` together in `checkAuth` to prevent intermediate state
-  - Solution 3: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
-  - Impact: Clean, professional loading experience with absolutely no UI flashing
+  - Issue: `checkAuth` completing before Supabase session loaded from cookies
+  - Solution 1: Added 50ms delay before getSession to let Supabase initialize
+  - Solution 2: Retry getSession once after 100ms if no session found initially
+  - Solution 3: Refactored `fetchUserProfile` to return user data instead of setting state directly
+  - Solution 4: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
+  - Impact: Gives Supabase time to read session from cookies before showing UI
 
 ### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨
