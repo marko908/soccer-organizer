@@ -169,26 +169,30 @@ export default function Home() {
         <h2 className="text-3xl font-bold mb-4">{t('home.readyToOrganize')}</h2>
         <p className="text-primary-100 mb-8 text-lg">{t('home.joinOrganizers')}</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {!loading && (
-            user ? (
-              <>
-                <Link href="/dashboard" className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors">
-                  {t('home.goToDashboard')}
-                </Link>
-                <Link href="/create" className="border-2 border-white text-white font-semibold py-3 px-8 rounded-xl hover:bg-white hover:text-primary-600 transition-colors">
-                  {t('home.createEvent')}
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/register" className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors">
-                  {t('home.startFreeToday')}
-                </Link>
-                <Link href="/login" className="border-2 border-white text-white font-semibold py-3 px-8 rounded-xl hover:bg-white hover:text-primary-600 transition-colors">
-                  {t('home.signIn')}
-                </Link>
-              </>
-            )
+          {loading ? (
+            /* Loading skeleton - prevents flash of wrong UI */
+            <div className="flex gap-4">
+              <div className="h-12 w-40 bg-white/20 rounded-xl animate-pulse"></div>
+              <div className="h-12 w-32 bg-white/20 rounded-xl animate-pulse"></div>
+            </div>
+          ) : user ? (
+            <>
+              <Link href="/dashboard" className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors">
+                {t('home.goToDashboard')}
+              </Link>
+              <Link href="/create" className="border-2 border-white text-white font-semibold py-3 px-8 rounded-xl hover:bg-white hover:text-primary-600 transition-colors">
+                {t('home.createEvent')}
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/register" className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors">
+                {t('home.startFreeToday')}
+              </Link>
+              <Link href="/login" className="border-2 border-white text-white font-semibold py-3 px-8 rounded-xl hover:bg-white hover:text-primary-600 transition-colors">
+                {t('home.signIn')}
+              </Link>
+            </>
           )}
         </div>
       </div>

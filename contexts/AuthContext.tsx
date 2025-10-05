@@ -54,8 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null)
       } else if (event === 'SIGNED_IN') {
         console.log('✅ User signed in')
-        if (session?.user) {
+        // Skip refetch if user is already loaded with same ID (e.g., tab switch)
+        if (session?.user && currentUserIdRef.current !== session.user.id) {
           await fetchUserProfile(session.user.id)
+        } else if (session?.user) {
+          console.log('⏭️ User already loaded, skipping refetch')
         }
       } else if (event === 'TOKEN_REFRESHED') {
         // Token refresh happens automatically (e.g., tab switching)
@@ -87,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const startTime = performance.now()
       console.log(`🔍 Fetching profile for user: ${userId} (attempt ${retryCount + 1})`)
 
-      // Timeout after 3 seconds
+      // Timeout after 10 seconds (increased for cold starts and network delays)
       const queryPromise = supabase
         .from('users')
         .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
@@ -95,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single()
 
       const timeoutPromise = new Promise<{ data: null, error: any }>((_, reject) =>
-        setTimeout(() => reject(new Error('Query timeout')), 3000)
+        setTimeout(() => reject(new Error('Query timeout')), 10000)
       )
 
       const result = await Promise.race([queryPromise, timeoutPromise])
@@ -117,7 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         console.error('❌ Error fetching profile after 3 attempts:', error.message)
-        setUser(null)
+        console.warn('⚠️ Keeping existing user data to prevent logout')
+        // Don't set user to null - keep existing session to prevent unwanted logout
         return
       }
 

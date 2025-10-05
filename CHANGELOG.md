@@ -11,9 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2025-10-05] - Fix Infinite Loop Crash in AuthContext
+## [2025-10-05] - Fix Tab-Switch Logout & Flash of Logged-Out UI
 
 ### Fixed
+- **Tab-Switch Logout Bug** 🔄
+  - Fixed users being logged out when switching browser tabs
+  - Issue: `SIGNED_IN` event on tab switch triggered profile refetch with aggressive 3s timeout
+  - Solution 1: Skip profile refetch if user already loaded with same ID (`contexts/AuthContext.tsx:57-62`)
+  - Solution 2: Increased timeout from 3s to 10s for cold starts and network delays (`contexts/AuthContext.tsx:93-101`)
+  - Solution 3: Don't logout on timeout - keep existing user data (`contexts/AuthContext.tsx:122-125`)
+  - Impact: Users remain logged in when switching tabs or experiencing network delays
+
+- **Flash of Logged-Out UI (FOUC)** ⚡
+  - Fixed brief flash of logged-out interface on page refresh
+  - Issue: Bottom CTA section showed no buttons during auth loading state
+  - Solution: Added loading skeleton to bottom CTA section (`app/page.tsx:172-177`)
+  - Impact: Smooth loading experience without UI flashing
+
+### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨
   - Fixed infinite loop in authentication flow causing browser crashes
   - Issue: Multiple `setLoading(false)` calls in different code paths created race conditions
