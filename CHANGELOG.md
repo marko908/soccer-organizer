@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Unified Hover Effects & Full Card Clickability
+
+### Changed
+- **Unified Hover Effects** 🎨
+  - Both gray and primary cards now darken consistently on hover (~20%)
+  - Gray cards: `gray-50/100 → gray-100/200` (darker on hover)
+  - Primary cards: `primary-50/100 → primary-100/200` (darker on hover)
+  - Previously gray cards got lighter (inconsistent), now both darken uniformly
+  - Files: `app/globals.css:57, 61`
+
+- **Full Card Clickability for Registered Users** 🖱️
+  - Entire card is now clickable for registered users (avatar, name, @nickname)
+  - Previously only @nickname was clickable
+  - Wrapped entire card in `<Link>` component for registered users
+  - Added `cursor-pointer` to registered cards
+  - Better UX - larger click target
+  - Files: `app/globals.css:61`, `app/event/[id]/page.tsx:278-322`
+
+### Removed
+- **Blue Dot Indicator** 🔵
+  - Removed redundant blue dot emoji next to @nickname
+  - Visual distinction already clear from card styling (primary gradient, colored border)
+  - Cleaner, less cluttered UI
+  - Files: `app/event/[id]/page.tsx:295-297`
+
+---
+
 ## [2025-10-05] - Enhanced UI for Registered Users & Duplicate Prevention
 
 ### Added

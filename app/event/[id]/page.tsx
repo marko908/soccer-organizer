@@ -275,11 +275,8 @@ export default function EventPage() {
                 const { fullName, nickname } = parseParticipantName(participant.name)
                 const hasNickname = nickname !== null
 
-                return (
-                  <div
-                    key={participant.id}
-                    className={hasNickname ? "participant-card-registered" : "participant-card"}
-                  >
+                const CardContent = (
+                  <>
                     <div className="flex-shrink-0 mr-3">
                       <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${hasNickname ? 'border-primary-400' : 'border-gray-200'}`}>
                         <Image
@@ -295,21 +292,32 @@ export default function EventPage() {
                       <div className="font-semibold text-gray-900">
                         {fullName}
                         {hasNickname && nickname && (
-                          <>
-                            <Link
-                              href={`/u/${nickname}`}
-                              className="text-gray-500 text-sm font-normal ml-1 hover:text-primary-600 transition-colors"
-                            >
-                              @{nickname}
-                            </Link>
-                            <span className="ml-1 text-primary-600">🔵</span>
-                          </>
+                          <span className="text-gray-500 text-sm font-normal ml-1">
+                            @{nickname}
+                          </span>
                         )}
                       </div>
                     </div>
                     <div className="text-xs text-gray-400">
                       ✓ Confirmed
                     </div>
+                  </>
+                )
+
+                return hasNickname && nickname ? (
+                  <Link
+                    key={participant.id}
+                    href={`/u/${nickname}`}
+                    className="participant-card-registered"
+                  >
+                    {CardContent}
+                  </Link>
+                ) : (
+                  <div
+                    key={participant.id}
+                    className="participant-card"
+                  >
+                    {CardContent}
                   </div>
                 )
               })}
