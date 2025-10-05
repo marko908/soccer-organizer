@@ -23,12 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Impact: Users remain logged in when switching tabs or experiencing network delays
 
 - **Flash of Logged-Out UI (FOUC)** ⚡
-  - Fixed brief flash of logged-out interface on page refresh
+  - Fixed brief flash of logged-out interface on page refresh (development mode)
   - Root cause: React StrictMode runs `checkAuth` twice - second call returned null while first was fetching
-  - Solution: Prevent duplicate `checkAuth` calls with ref flag (`contexts/AuthContext.tsx:37-45`)
-  - Also added 50ms delay + retry for slow Supabase cookie reads
+  - Solution: Prevent duplicate `checkAuth` calls with `checkAuthRunning` ref flag (`contexts/AuthContext.tsx:37-45`)
+  - Added 50ms delay + retry for slow Supabase cookie reads (`contexts/AuthContext.tsx:185-196`)
   - Full-page loading skeleton prevents any UI flash (`app/page.tsx:12-36`)
-  - Impact: Only one checkAuth runs, eliminating the flash completely
+  - Impact: Eliminates flash in dev mode; production unaffected (StrictMode disabled)
+  - **Status**: ✅ Fixed and verified working
 
 ### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨
