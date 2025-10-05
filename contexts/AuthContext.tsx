@@ -56,7 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('✅ User signed in')
         // Skip refetch if user is already loaded with same ID (e.g., tab switch)
         if (session?.user && currentUserIdRef.current !== session.user.id) {
-          await fetchUserProfile(session.user.id)
+          const userData = await fetchUserProfile(session.user.id)
+          setUser(userData)
         } else if (session?.user) {
           console.log('⏭️ User already loaded, skipping refetch')
         }
@@ -65,7 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Don't refetch profile - user data doesn't change on token refresh
         console.log('🔄 Token refreshed (skipping profile refetch)')
       } else if (session?.user) {
-        await fetchUserProfile(session.user.id)
+        const userData = await fetchUserProfile(session.user.id)
+        setUser(userData)
       } else {
         setUser(null)
       }
@@ -76,11 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const fetchUserProfile = async (userId: string, retryCount = 0) => {
+  const fetchUserProfile = async (userId: string, retryCount = 0): Promise<User | null> => {
     // Prevent concurrent fetches for the same user
     if (fetchingRef.current && currentUserIdRef.current === userId) {
       console.log('⏭️ Skipping duplicate fetch for:', userId)
-      return
+      return user // Return existing user
     }
 
     fetchingRef.current = true
@@ -121,15 +123,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         console.error('❌ Error fetching profile after 3 attempts:', error.message)
         console.warn('⚠️ Keeping existing user data to prevent logout')
-        // Don't set user to null - keep existing session to prevent unwanted logout
-        return
+        // Return existing user to prevent logout
+        return user
       }
 
       if (!profile) {
         console.error('⚠️ Query succeeded but profile is null/undefined')
         console.error('⚠️ This usually means RLS is blocking the query')
-        setUser(null)
-        return
+        return null
       }
 
       console.log('🔑 Getting auth user...')
@@ -138,13 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (authUser && profile) {
         console.log('✅ Profile loaded:', profile.nickname)
-        console.log('✅ Setting user state with data:', {
-          id: authUser.id,
-          email: profile.email,
-          nickname: profile.nickname,
-          role: profile.role,
-        })
-        setUser({
+        const userData: User = {
           id: authUser.id,
           email: profile.email || authUser.email!,
           fullName: profile.full_name || '',
@@ -156,17 +151,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           weight: profile.weight,
           height: profile.height,
           canCreateEvents: profile.can_create_events || false,
-        })
-        console.log('✅ User state updated successfully')
+        }
+        console.log('✅ User data prepared:', userData.nickname)
+        return userData
       } else {
         console.log('⚠️ No profile or auth user found')
         console.log('⚠️ authUser:', !!authUser, 'profile:', !!profile)
-        setUser(null)
+        return null
       }
     } catch (error) {
       console.error('❌ Failed to fetch user profile:', error)
       console.error('❌ Exception details:', error)
-      setUser(null)
+      return null
     } finally {
       fetchingRef.current = false
     }
@@ -187,19 +183,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session?.user) {
         console.log('✅ Session found:', session.user.email)
         console.log('🔑 User ID:', session.user.id)
-        // Wait for profile fetch to complete before setting loading=false
-        await fetchUserProfile(session.user.id)
+        // Fetch profile and get user data
+        const userData = await fetchUserProfile(session.user.id)
+        // Set user and loading together to prevent flash
+        setUser(userData)
+        setLoading(false)
       } else {
         console.log('❌ No session found')
         console.log('🍪 Cookies:', document.cookie)
         setUser(null)
+        setLoading(false)
       }
     } catch (error) {
       console.error('❌ Auth check failed:', error)
       setUser(null)
-    } finally {
-      console.log('✅ Auth check complete, loading = false')
       setLoading(false)
+    } finally {
+      console.log('✅ Auth check complete')
       initialLoadComplete.current = true
     }
   }
@@ -220,7 +220,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.user) {
         console.log('✅ Login successful:', data.user.email)
-        await fetchUserProfile(data.user.id)
+        const userData = await fetchUserProfile(data.user.id)
+        setUser(userData)
         return true
       }
 
@@ -327,7 +328,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (authUser) {
-        await fetchUserProfile(authUser.id)
+        const userData = await fetchUserProfile(authUser.id)
+        setUser(userData)
       }
     } catch (error) {
       console.error('Failed to refresh user:', error)

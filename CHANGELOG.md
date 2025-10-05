@@ -24,9 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Flash of Logged-Out UI (FOUC)** ⚡
   - Fixed brief flash of logged-out interface on page refresh
-  - Issue: Entire page content visible before auth completed, showing wrong UI state
-  - Solution: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
-  - Impact: Clean, professional loading experience with no UI flashing
+  - Issue: Race condition - `loading` set to false before `user` state updated
+  - Solution 1: Refactored `fetchUserProfile` to return user data instead of setting state directly
+  - Solution 2: Set both `user` and `loading` together in `checkAuth` to prevent intermediate state
+  - Solution 3: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
+  - Impact: Clean, professional loading experience with absolutely no UI flashing
 
 ### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨
