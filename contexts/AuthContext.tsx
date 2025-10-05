@@ -79,16 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const fetchUserProfile = async (userId: string, retryCount = 0): Promise<User | null> => {
-    // If fetch already in progress for same user, wait for it to complete
+    // Prevent concurrent fetches for the same user
     if (fetchingRef.current && currentUserIdRef.current === userId) {
-      console.log('⏭️ Fetch in progress, waiting for completion...')
-      // Wait up to 30 seconds for ongoing fetch
-      const startWait = Date.now()
-      while (fetchingRef.current && Date.now() - startWait < 30000) {
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-      console.log('✅ Fetch complete, returning user:', user?.nickname || 'null')
-      return user
+      console.log('⏭️ Skipping duplicate fetch for:', userId)
+      return user // Return existing user
     }
 
     fetchingRef.current = true
