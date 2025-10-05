@@ -238,7 +238,6 @@ export default function ProfilePage() {
                 disabled
                 className="input bg-gray-50 cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-gray-500">Full name cannot be changed</p>
             </div>
 
             <div>
@@ -270,7 +269,6 @@ export default function ProfilePage() {
                 disabled
                 className="input bg-gray-50 cursor-not-allowed"
               />
-              <p className="mt-1 text-xs text-gray-500">Email managed by Supabase</p>
             </div>
 
             <div>

@@ -11,6 +11,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Profile & Player List UX Improvements
+
+### Changed
+- **Cleaned Up Profile Page** 🧹
+  - Removed unnecessary helper text annotations ("Full name cannot be changed", "Email managed by Supabase")
+  - Disabled fields are already visually grayed out - annotations were redundant
+  - Cleaner, more professional look
+  - Files: `app/profile/page.tsx:235-240, 266-271`
+
+- **Improved Player List Styling** 🎨
+  - Split participant name display: Full name (bold) + @nickname (lighter, smaller)
+  - @nickname now styled in gray (`text-gray-500`) and smaller font (`text-sm`)
+  - Emphasis on full name as primary information
+  - Minimalistic, cleaner visual hierarchy
+  - Files: `app/event/[id]/page.tsx:160-169, 290-300`
+
+- **Made Registered Players Clickable** 🔗
+  - Participant @nicknames are now clickable links to user profiles
+  - Links navigate to `/u/[nickname]` route
+  - Hover effect: transitions to primary color
+  - Only applies to registered users (names with @nickname)
+  - Files: `app/event/[id]/page.tsx:9, 16, 293-298`
+
+### Added
+- **User ID in Participant Data** 🔑
+  - API now returns `userId` for each participant (if available)
+  - Enables future features like direct messaging, user stats, etc.
+  - Backend automatically includes `user_id` from database
+  - Files: `app/api/simple-event/[id]/route.ts:30, 65`
+
+---
+
 ## [2025-10-05] - Registration UX Improvement
 
 ### Changed

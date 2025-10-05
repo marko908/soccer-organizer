@@ -6,12 +6,14 @@ import { formatCurrency, formatDateTime, formatDateTimeShort } from '@/lib/utils
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface Participant {
   id: number
   name: string
   email?: string
   avatarUrl?: string
+  userId?: string
 }
 
 interface Event {
@@ -154,6 +156,18 @@ export default function EventPage() {
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
   const isOrganizer = user && event && user.id === event.organizerId
 
+  // Helper function to parse participant name
+  const parseParticipantName = (name: string) => {
+    const atIndex = name.lastIndexOf(' @')
+    if (atIndex === -1) {
+      return { fullName: name, nickname: null }
+    }
+    return {
+      fullName: name.substring(0, atIndex),
+      nickname: name.substring(atIndex + 2) // +2 to skip ' @'
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       {success && (
@@ -252,30 +266,45 @@ export default function EventPage() {
 
           {event.participants.length > 0 ? (
             <div className="space-y-2">
-              {event.participants.map((participant, index) => (
-                <div
-                  key={participant.id}
-                  className="participant-card"
-                >
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
-                      <Image
-                        src={participant.avatarUrl || '/default-avatar.svg'}
-                        alt={participant.name}
-                        width={40}
-                        height={40}
-                        className="object-cover"
-                      />
+              {event.participants.map((participant, index) => {
+                const { fullName, nickname } = parseParticipantName(participant.name)
+                const hasNickname = nickname !== null
+
+                return (
+                  <div
+                    key={participant.id}
+                    className="participant-card"
+                  >
+                    <div className="flex-shrink-0 mr-3">
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                        <Image
+                          src={participant.avatarUrl || '/default-avatar.svg'}
+                          alt={participant.name}
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">
+                        {fullName}
+                        {hasNickname && nickname && (
+                          <Link
+                            href={`/u/${nickname}`}
+                            className="text-gray-500 text-sm font-normal ml-1 hover:text-primary-600 transition-colors"
+                          >
+                            @{nickname}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      ✓ Confirmed
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900">{participant.name}</div>
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    ✓ Confirmed
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <p className="text-gray-500 text-center py-4">No players registered yet</p>

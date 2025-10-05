@@ -27,7 +27,7 @@ export async function GET(
     // Get all participants for this event
     const { data: participants, error: participantsError } = await supabase
       .from('participants')
-      .select('id, name, email, payment_status, created_at, avatar_url')
+      .select('id, name, email, payment_status, created_at, avatar_url, user_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
 
@@ -62,6 +62,7 @@ export async function GET(
         name: p.name,
         email: p.email,
         avatarUrl: p.avatar_url,
+        userId: p.user_id,
         paymentStatus: p.payment_status,
         createdAt: p.created_at,
       })),
