@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
-import { formatCurrency, formatDateTime, formatDateTimeShort } from '@/lib/utils'
+import { formatCurrency, formatDateTime, formatDateTimeShort, formatTimeRange, formatFieldType, getFieldTypeIcon } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
@@ -20,10 +20,15 @@ interface Event {
   id: number
   name: string
   date: string
+  endTime: string
   location: string
   totalCost: number
+  minPlayers: number
   maxPlayers: number
   pricePerPlayer: number
+  playersPerTeam: number
+  fieldType: 'futsal' | 'artificial_grass' | 'natural_grass'
+  cleatsAllowed: boolean
   participants: Participant[]
   paidParticipants: number
   collectedAmount: number
@@ -210,8 +215,28 @@ export default function EventPage() {
               </div>
 
               <div className="flex items-center">
+                <span className="text-lg">⏰</span>
+                <span className="ml-2">{formatTimeRange(event.date, event.endTime)}</span>
+              </div>
+
+              <div className="flex items-center">
                 <span className="text-lg">📍</span>
                 <span className="ml-2">{event.location}</span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="text-lg">{getFieldTypeIcon(event.fieldType)}</span>
+                <span className="ml-2">{formatFieldType(event.fieldType)}</span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="text-lg">👥</span>
+                <span className="ml-2">{event.playersPerTeam}v{event.playersPerTeam}</span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="text-lg">👟</span>
+                <span className="ml-2">Cleats {event.cleatsAllowed ? 'Allowed' : 'Not Allowed'}</span>
               </div>
 
               <div className="flex items-center">
@@ -278,6 +303,11 @@ export default function EventPage() {
                   </div>
                   <div className="text-xs text-gray-500 uppercase tracking-wider">Available</div>
                 </div>
+              </div>
+
+              <div className="mt-4 text-center text-sm text-gray-600">
+                <div className="font-semibold">Player Range</div>
+                <div>{event.minPlayers} - {event.maxPlayers} players</div>
               </div>
             </div>
           </div>

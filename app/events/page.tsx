@@ -2,17 +2,22 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { formatCurrency, formatDateTimeShort } from '@/lib/utils'
+import { formatCurrency, formatDateTimeShort, formatTimeRange, formatFieldType, getFieldTypeIcon } from '@/lib/utils'
 import Image from 'next/image'
 
 interface Event {
   id: number
   name: string
   date: string
+  endTime: string
   location: string
   totalCost: number
+  minPlayers: number
   maxPlayers: number
   pricePerPlayer: number
+  playersPerTeam: number
+  fieldType: 'futsal' | 'artificial_grass' | 'natural_grass'
+  cleatsAllowed: boolean
   paidParticipants: number
   availableSpots: number
   organizer: {
@@ -90,8 +95,16 @@ export default function PublicEventsPage() {
                   <span>{formatDateTimeShort(event.date)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                  <span>⏰</span>
+                  <span>{formatTimeRange(event.date, event.endTime)}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
                   <span>📍</span>
                   <span className="line-clamp-1">{event.location}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                  <span>{getFieldTypeIcon(event.fieldType)}</span>
+                  <span>{formatFieldType(event.fieldType)} • {event.playersPerTeam}v{event.playersPerTeam}</span>
                 </div>
               </div>
 

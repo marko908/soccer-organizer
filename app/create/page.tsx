@@ -17,9 +17,14 @@ export default function CreateEvent() {
   const [formData, setFormData] = useState({
     name: '',
     date: '',
+    endTime: '',
     location: '',
     totalCost: '',
+    minPlayers: '10',
     maxPlayers: '',
+    playersPerTeam: '6',
+    fieldType: 'artificial_grass',
+    cleatsAllowed: true,
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,8 +33,11 @@ export default function CreateEvent() {
 
     // Validation
     const totalCost = parseFloat(formData.totalCost)
+    const minPlayers = parseInt(formData.minPlayers)
     const maxPlayers = parseInt(formData.maxPlayers)
+    const playersPerTeam = parseInt(formData.playersPerTeam)
     const eventDate = new Date(formData.date)
+    const endTime = new Date(formData.endTime)
     const now = new Date()
     const maxDate = new Date()
     maxDate.setDate(maxDate.getDate() + 90)
@@ -40,8 +48,26 @@ export default function CreateEvent() {
       return
     }
 
-    if (maxPlayers > 30) {
-      alert('Maximum number of players is 30')
+    if (minPlayers < 2) {
+      alert('Minimum players must be at least 2')
+      setLoading(false)
+      return
+    }
+
+    if (maxPlayers > 50) {
+      alert('Maximum number of players is 50')
+      setLoading(false)
+      return
+    }
+
+    if (minPlayers >= maxPlayers) {
+      alert('Minimum players must be less than maximum players')
+      setLoading(false)
+      return
+    }
+
+    if (playersPerTeam < 2 || playersPerTeam > 11) {
+      alert('Players per team must be between 2 and 11')
       setLoading(false)
       return
     }
@@ -54,6 +80,12 @@ export default function CreateEvent() {
 
     if (eventDate > maxDate) {
       alert('Events can only be created up to 90 days in advance')
+      setLoading(false)
+      return
+    }
+
+    if (endTime <= eventDate) {
+      alert('End time must be after start time')
       setLoading(false)
       return
     }
@@ -83,11 +115,13 @@ export default function CreateEvent() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    const checked = (e.target as HTMLInputElement).checked
+
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
   }
 
@@ -129,21 +163,40 @@ export default function CreateEvent() {
             />
           </div>
 
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-              Date & Time
-            </label>
-            <input
-              type="datetime-local"
-              id="date"
-              name="date"
-              required
-              className="input"
-              value={formData.date}
-              onChange={handleChange}
-              max="2050-12-31T23:59"
-            />
-            <p className="text-xs text-gray-500 mt-1">Events can be created up to 90 days in advance (max year: 2050)</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                Start Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                id="date"
+                name="date"
+                required
+                className="input"
+                value={formData.date}
+                onChange={handleChange}
+                max="2050-12-31T23:59"
+              />
+              <p className="text-xs text-gray-500 mt-1">Up to 90 days in advance</p>
+            </div>
+
+            <div>
+              <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-2">
+                End Time
+              </label>
+              <input
+                type="datetime-local"
+                id="endTime"
+                name="endTime"
+                required
+                className="input"
+                value={formData.endTime}
+                onChange={handleChange}
+                max="2050-12-31T23:59"
+              />
+              <p className="text-xs text-gray-500 mt-1">Must be after start time</p>
+            </div>
           </div>
 
           <div>
@@ -160,6 +213,59 @@ export default function CreateEvent() {
               value={formData.location}
               onChange={handleChange}
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="playersPerTeam" className="block text-sm font-medium text-gray-700 mb-2">
+                Players per Team
+              </label>
+              <input
+                type="number"
+                id="playersPerTeam"
+                name="playersPerTeam"
+                min="2"
+                max="11"
+                required
+                className="input"
+                placeholder="6"
+                value={formData.playersPerTeam}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">e.g., 6 for 6v6</p>
+            </div>
+
+            <div>
+              <label htmlFor="fieldType" className="block text-sm font-medium text-gray-700 mb-2">
+                Field Type
+              </label>
+              <select
+                id="fieldType"
+                name="fieldType"
+                required
+                className="input"
+                value={formData.fieldType}
+                onChange={handleChange}
+              >
+                <option value="futsal">Futsal</option>
+                <option value="artificial_grass">Artificial Grass</option>
+                <option value="natural_grass">Natural Grass</option>
+              </select>
+            </div>
+
+            <div className="flex items-center pt-8">
+              <label htmlFor="cleatsAllowed" className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="cleatsAllowed"
+                  name="cleatsAllowed"
+                  checked={formData.cleatsAllowed}
+                  onChange={handleChange}
+                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-700">Cleats Allowed</span>
+              </label>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -184,23 +290,42 @@ export default function CreateEvent() {
             </div>
 
             <div>
-              <label htmlFor="maxPlayers" className="block text-sm font-medium text-gray-700 mb-2">
-                Max Players
+              <label htmlFor="minPlayers" className="block text-sm font-medium text-gray-700 mb-2">
+                Min Players
               </label>
               <input
                 type="number"
-                id="maxPlayers"
-                name="maxPlayers"
+                id="minPlayers"
+                name="minPlayers"
                 min="2"
-                max="30"
+                max="50"
                 required
                 className="input"
-                placeholder="14"
-                value={formData.maxPlayers}
+                placeholder="10"
+                value={formData.minPlayers}
                 onChange={handleChange}
               />
-              <p className="text-xs text-gray-500 mt-1">Maximum: 30 players</p>
+              <p className="text-xs text-gray-500 mt-1">Minimum to start game</p>
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="maxPlayers" className="block text-sm font-medium text-gray-700 mb-2">
+              Max Players
+            </label>
+            <input
+              type="number"
+              id="maxPlayers"
+              name="maxPlayers"
+              min="2"
+              max="50"
+              required
+              className="input"
+              placeholder="14"
+              value={formData.maxPlayers}
+              onChange={handleChange}
+            />
+            <p className="text-xs text-gray-500 mt-1">Maximum: 50 players (must be more than min players)</p>
           </div>
 
           {formData.totalCost && formData.maxPlayers && (

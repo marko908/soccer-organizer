@@ -45,3 +45,33 @@ export function formatDateTimeShort(dateString: string): string {
 
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
+
+export function formatTimeRange(startTime: string, endTime: string): string {
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+
+  const startHours = String(start.getHours()).padStart(2, '0')
+  const startMinutes = String(start.getMinutes()).padStart(2, '0')
+  const endHours = String(end.getHours()).padStart(2, '0')
+  const endMinutes = String(end.getMinutes()).padStart(2, '0')
+
+  return `${startHours}:${startMinutes} - ${endHours}:${endMinutes}`
+}
+
+export function formatFieldType(fieldType: string): string {
+  const types: { [key: string]: string } = {
+    'futsal': 'Futsal',
+    'artificial_grass': 'Artificial Grass',
+    'natural_grass': 'Natural Grass'
+  }
+  return types[fieldType] || fieldType
+}
+
+export function getFieldTypeIcon(fieldType: string): string {
+  const icons: { [key: string]: string } = {
+    'futsal': '⚽',
+    'artificial_grass': '🌱',
+    'natural_grass': '🌿'
+  }
+  return icons[fieldType] || '⚽'
+}

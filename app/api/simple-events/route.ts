@@ -44,10 +44,15 @@ export async function GET(request: NextRequest) {
           id: event.id,
           name: event.name,
           date: event.date,
+          endTime: event.end_time,
           location: event.location,
           totalCost: parseFloat(event.total_cost),
+          minPlayers: event.min_players,
           maxPlayers: event.max_players,
           pricePerPlayer: parseFloat(event.price_per_player),
+          playersPerTeam: event.players_per_team,
+          fieldType: event.field_type,
+          cleatsAllowed: event.cleats_allowed,
           organizerId: event.organizer_id,
           createdAt: event.created_at,
           updatedAt: event.updated_at,
@@ -85,10 +90,10 @@ export async function POST(request: NextRequest) {
     const organizerId = session.user.id
 
     const body = await request.json()
-    const { name, date, location, totalCost, maxPlayers } = body
+    const { name, date, endTime, location, totalCost, minPlayers, maxPlayers, playersPerTeam, fieldType, cleatsAllowed } = body
 
     // Validate input
-    if (!name || !date || !location || !totalCost || !maxPlayers) {
+    if (!name || !date || !endTime || !location || !totalCost || !minPlayers || !maxPlayers || !playersPerTeam || !fieldType) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -106,10 +111,15 @@ export async function POST(request: NextRequest) {
       .insert({
         name,
         date,
+        end_time: endTime,
         location,
         total_cost: totalCost,
+        min_players: minPlayers,
         max_players: maxPlayers,
         price_per_player: pricePerPlayer,
+        players_per_team: playersPerTeam,
+        field_type: fieldType,
+        cleats_allowed: cleatsAllowed ?? true,
         organizer_id: organizerId,
       })
       .select()
@@ -124,10 +134,15 @@ export async function POST(request: NextRequest) {
       id: event.id,
       name: event.name,
       date: event.date,
+      endTime: event.end_time,
       location: event.location,
       totalCost: parseFloat(event.total_cost),
+      minPlayers: event.min_players,
       maxPlayers: event.max_players,
       pricePerPlayer: parseFloat(event.price_per_player),
+      playersPerTeam: event.players_per_team,
+      fieldType: event.field_type,
+      cleatsAllowed: event.cleats_allowed,
       organizerId: event.organizer_id,
       createdAt: event.created_at,
       updatedAt: event.updated_at

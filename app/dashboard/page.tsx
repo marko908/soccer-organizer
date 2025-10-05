@@ -10,10 +10,15 @@ interface Event {
   id: number
   name: string
   date: string
+  endTime: string
   location: string
   totalCost: number
+  minPlayers: number
   maxPlayers: number
   pricePerPlayer: number
+  playersPerTeam: number
+  fieldType: string
+  cleatsAllowed: boolean
   participants: any[]
   paidParticipants: number
 }

@@ -11,6 +11,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Soccer-Specific Event Fields & Enhanced Event Creation
+
+### Added
+- **Time Range for Events** ⏰
+  - Split single time into start and end time fields
+  - Display time range (e.g., "18:00 - 20:00") on all event pages
+  - Validation: end time must be after start time
+  - Files: `app/create/page.tsx`, `lib/utils.ts`
+
+- **Players Per Team Field** 👥
+  - New field to specify game format (e.g., 6v6, 7v7, 11v11)
+  - Range: 2-11 players per team
+  - Displayed on event cards and detail pages
+  - Files: `app/create/page.tsx`, Database schema
+
+- **Field Type Selection** ⚽
+  - Three field types: Futsal, Artificial Grass, Natural Grass
+  - Each type has unique icon (⚽, 🌱, 🌿)
+  - Displayed prominently on event listings
+  - Files: `app/create/page.tsx`, `lib/utils.ts`
+
+- **Cleats Allowed Toggle** 👟
+  - Checkbox to indicate if cleats/studs are allowed
+  - Some fields/organizers don't allow cleats
+  - Displayed on event detail page
+  - Files: `app/create/page.tsx`
+
+- **Min/Max Player Range** 📊
+  - Separate fields for minimum and maximum players
+  - Minimum: players needed to start the game
+  - Maximum: total spots available
+  - Validation: min < max, max increased from 30 to 50
+  - Displayed as range on event pages (e.g., "12-16 players")
+  - Files: `app/create/page.tsx`
+
+### Changed
+- **Event Creation Form** 📝
+  - Reorganized layout with new soccer-specific fields
+  - Start Date & Time + End Time (replaces single Date & Time)
+  - Players per team, Field type, Cleats toggle in one row
+  - Total Cost + Min Players in one row
+  - Max Players in separate row with helper text
+  - Files: `app/create/page.tsx:17-28, 218-329`
+
+- **Event Display Pages** 🎨
+  - Event detail page shows all new fields with icons
+  - Time range display replaces single time
+  - Field type with icon (⚽/🌱/🌿)
+  - Players per team format (e.g., "6v6")
+  - Cleats allowed/not allowed indicator
+  - Min-max player range in stats section
+  - Files: `app/event/[id]/page.tsx`, `app/events/page.tsx`
+
+- **Public Events List** 📋
+  - Cards show time range instead of single time
+  - Field type and game format displayed
+  - Updated to show all new event information
+  - Files: `app/events/page.tsx:93-108`
+
+### Database
+- **New Columns in `events` table:**
+  - `end_time` TIMESTAMP - End time of the game
+  - `players_per_team` INTEGER - Players per team (2-11)
+  - `field_type` TEXT - 'futsal', 'artificial_grass', or 'natural_grass'
+  - `cleats_allowed` BOOLEAN - Whether cleats are allowed
+  - `min_players` INTEGER - Minimum players to start
+  - Updated `max_players` constraint to 50 (from 30)
+  - Files: `supabase-add-event-fields.sql`
+
+- **Constraints Added:**
+  - `end_time` > `date` (end must be after start)
+  - `min_players` < `max_players`
+  - `players_per_team` between 2 and 11
+  - `field_type` must be valid enum value
+  - `max_players` ≤ 50
+
+### API Updates
+- **All event API endpoints updated:**
+  - `POST /api/simple-events` - Accepts new fields
+  - `GET /api/simple-events` - Returns new fields
+  - `GET /api/simple-event/[id]` - Returns new fields
+  - `GET /api/public-events` - Returns new fields
+  - Files: `app/api/simple-events/route.ts`, `app/api/simple-event/[id]/route.ts`, `app/api/public-events/route.ts`
+
+### Helper Functions
+- **New utility functions:**
+  - `formatTimeRange(startTime, endTime)` - Formats time range
+  - `formatFieldType(fieldType)` - Human-readable field type
+  - `getFieldTypeIcon(fieldType)` - Returns emoji for field type
+  - Files: `lib/utils.ts:49-77`
+
+### Migration Required
+**IMPORTANT:** Run the SQL migration in Supabase before using new features:
+1. Go to Supabase SQL Editor
+2. Run `supabase-add-event-fields.sql`
+3. This will add new columns and update existing events with defaults
+
+---
+
 ## [2025-10-05] - Public Events List and Improved Post-Payment Navigation
 
 ### Added
