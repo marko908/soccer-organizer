@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseUser } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function DELETE(
   request: NextRequest,
@@ -20,22 +21,15 @@ export async function DELETE(
     const eventId = parseInt(params.eventId)
     const participantId = parseInt(params.participantId)
 
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
-
-    await client.connect()
-
     // Verify the event belongs to this organizer
-    const eventCheck = await client.query(
-      'SELECT id FROM events WHERE id = $1 AND organizer_id = $2',
-      [eventId, organizerId]
-    )
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from('events')
+      .select('id')
+      .eq('id', eventId)
+      .eq('organizer_id', organizerId)
+      .single()
 
-    if (eventCheck.rows.length === 0) {
-      await client.end()
+    if (eventError || !event) {
       return NextResponse.json(
         { error: 'Event not found or unauthorized' },
         { status: 404 }
@@ -43,14 +37,15 @@ export async function DELETE(
     }
 
     // Delete participant
-    const result = await client.query(
-      'DELETE FROM participants WHERE id = $1 AND event_id = $2 RETURNING id',
-      [participantId, eventId]
-    )
+    const { data: deletedParticipant, error: deleteError } = await supabaseAdmin
+      .from('participants')
+      .delete()
+      .eq('id', participantId)
+      .eq('event_id', eventId)
+      .select()
+      .single()
 
-    await client.end()
-
-    if (result.rows.length === 0) {
+    if (deleteError || !deletedParticipant) {
       return NextResponse.json(
         { error: 'Participant not found' },
         { status: 404 }

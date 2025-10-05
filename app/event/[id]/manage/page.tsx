@@ -11,6 +11,7 @@ interface Participant {
   email?: string
   paymentStatus: string
   createdAt: string
+  stripePaymentIntentId?: string
 }
 
 interface Event {
@@ -146,6 +147,7 @@ export default function ManageEventPage() {
     )
   }
 
+  const isAdmin = user.role === 'ADMIN'
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
 
   return (
@@ -225,20 +227,37 @@ export default function ManageEventPage() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className={participant.paymentStatus === 'succeeded'
-                      ? ((participant as any).stripePaymentIntentId ? 'status-badge-paid' : 'status-badge-cash')
+                      ? (participant.stripePaymentIntentId ? 'status-badge-paid' : 'status-badge-cash')
                       : 'status-badge-cash'
                     }>
                       {participant.paymentStatus === 'succeeded'
-                        ? ((participant as any).stripePaymentIntentId ? 'Stripe' : 'Cash')
+                        ? (participant.stripePaymentIntentId ? 'Stripe' : 'Cash')
                         : 'Cash'
                       }
                     </span>
-                    <button
-                      onClick={() => removeParticipant(participant.id)}
-                      className="text-red-600 hover:text-red-700 text-sm"
-                    >
-                      Remove
-                    </button>
+                    {participant.stripePaymentIntentId ? (
+                      // Stripe payment - admin only can remove
+                      isAdmin ? (
+                        <button
+                          onClick={() => removeParticipant(participant.id)}
+                          className="text-red-600 hover:text-red-700 text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">
+                          Contact admin
+                        </span>
+                      )
+                    ) : (
+                      // Cash payment - organizer can remove
+                      <button
+                        onClick={() => removeParticipant(participant.id)}
+                        className="text-red-600 hover:text-red-700 text-sm font-medium"
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

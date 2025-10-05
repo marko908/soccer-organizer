@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Restrict Stripe Participant Removal to Admins
+
+### Changed
+- **Admin-Only Removal for Stripe Payments** 🔒
+  - Only administrators can remove participants who paid via Stripe
+  - Organizers can still remove cash participants (they added them manually)
+  - Non-admin organizers see "Contact admin" for Stripe participants
+  - Prevents accidental removal of paid participants
+  - Files: `app/event/[id]/manage/page.tsx:14, 150, 238-260`
+
+### Fixed
+- **Refactored Participant API to Supabase** 🔄
+  - Migrated from direct PostgreSQL (`pg`) to Supabase client
+  - Fixed "Cannot find module 'pg'" error when removing participants
+  - Consistent with rest of application architecture
+  - Better error handling and type safety
+  - Files: `app/api/simple-participants/[eventId]/route.ts`, `app/api/simple-participants/[eventId]/[participantId]/route.ts`
+
+---
+
 ## [2025-10-05] - Unified Hover Effects & Full Card Clickability
 
 ### Changed

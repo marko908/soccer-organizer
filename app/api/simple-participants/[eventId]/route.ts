@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseUser } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(
   request: NextRequest,
@@ -29,39 +30,44 @@ export async function POST(
       )
     }
 
-    const { Client } = require('pg')
-    const client = new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
-    })
-
-    await client.connect()
-
     // Verify the event belongs to this organizer
-    const eventCheck = await client.query(
-      'SELECT id FROM events WHERE id = $1 AND organizer_id = $2',
-      [eventId, organizerId]
-    )
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from('events')
+      .select('id')
+      .eq('id', eventId)
+      .eq('organizer_id', organizerId)
+      .single()
 
-    if (eventCheck.rows.length === 0) {
-      await client.end()
+    if (eventError || !event) {
       return NextResponse.json(
         { error: 'Event not found or unauthorized' },
         { status: 404 }
       )
     }
 
-    // Add participant with 'cash' payment status
-    const result = await client.query(
-      `INSERT INTO participants (name, email, event_id, payment_status, created_at, updated_at)
-       VALUES ($1, $2, $3, 'succeeded', NOW(), NOW())
-       RETURNING id, name, email, payment_status, created_at`,
-      [name.trim(), email?.trim() || null, eventId]
-    )
+    // Add participant with 'succeeded' payment status (cash payment)
+    const { data: participant, error: insertError } = await supabaseAdmin
+      .from('participants')
+      .insert({
+        name: name.trim(),
+        email: email?.trim() || null,
+        event_id: eventId,
+        payment_status: 'succeeded',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select('id, name, email, payment_status, created_at')
+      .single()
 
-    await client.end()
+    if (insertError || !participant) {
+      console.error('Insert error:', insertError)
+      return NextResponse.json(
+        { error: insertError?.message || 'Failed to add participant' },
+        { status: 500 }
+      )
+    }
 
-    return NextResponse.json({ participant: result.rows[0] })
+    return NextResponse.json({ participant })
   } catch (error: any) {
     console.error('Add participant error:', error)
     return NextResponse.json(
