@@ -156,6 +156,11 @@ export default function EventPage() {
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
   const isOrganizer = user && event && user.id === event.organizerId
 
+  // Check if current user is already registered for this event
+  const isUserAlreadyRegistered = user && event.participants.some(p =>
+    p.userId === user.id || p.name.includes(`@${user.nickname}`)
+  )
+
   // Helper function to parse participant name
   const parseParticipantName = (name: string) => {
     const atIndex = name.lastIndexOf(' @')
@@ -273,10 +278,10 @@ export default function EventPage() {
                 return (
                   <div
                     key={participant.id}
-                    className="participant-card"
+                    className={hasNickname ? "participant-card-registered" : "participant-card"}
                   >
                     <div className="flex-shrink-0 mr-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                      <div className={`w-10 h-10 rounded-full overflow-hidden border-2 ${hasNickname ? 'border-primary-400' : 'border-gray-200'}`}>
                         <Image
                           src={participant.avatarUrl || '/default-avatar.svg'}
                           alt={participant.name}
@@ -290,12 +295,15 @@ export default function EventPage() {
                       <div className="font-semibold text-gray-900">
                         {fullName}
                         {hasNickname && nickname && (
-                          <Link
-                            href={`/u/${nickname}`}
-                            className="text-gray-500 text-sm font-normal ml-1 hover:text-primary-600 transition-colors"
-                          >
-                            @{nickname}
-                          </Link>
+                          <>
+                            <Link
+                              href={`/u/${nickname}`}
+                              className="text-gray-500 text-sm font-normal ml-1 hover:text-primary-600 transition-colors"
+                            >
+                              @{nickname}
+                            </Link>
+                            <span className="ml-1 text-primary-600">🔵</span>
+                          </>
                         )}
                       </div>
                     </div>
@@ -318,15 +326,31 @@ export default function EventPage() {
             <div className="space-y-4">
               {!showPaymentForm ? (
                 <div className="text-center">
-                  <p className="text-gray-600 mb-4">
-                    Secure your spot by paying {formatCurrency(event.pricePerPlayer)}
-                  </p>
-                  <button
-                    onClick={() => setShowPaymentForm(true)}
-                    className="btn-primary w-full"
-                  >
-                    Pay & Sign Up
-                  </button>
+                  {isUserAlreadyRegistered ? (
+                    <>
+                      <p className="text-green-600 mb-4 font-medium">
+                        ✓ You're already registered for this event
+                      </p>
+                      <button
+                        disabled
+                        className="btn-disabled w-full"
+                      >
+                        Already Signed Up ✓
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-gray-600 mb-4">
+                        Secure your spot by paying {formatCurrency(event.pricePerPlayer)}
+                      </p>
+                      <button
+                        onClick={() => setShowPaymentForm(true)}
+                        className="btn-primary w-full"
+                      >
+                        Pay & Sign Up
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">

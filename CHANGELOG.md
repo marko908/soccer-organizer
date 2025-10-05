@@ -11,6 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Enhanced UI for Registered Users & Duplicate Prevention
+
+### Added
+- **Visual Distinction for Registered Users** 🎨
+  - Registered users (with @nickname) now have enhanced visual styling
+  - Light primary color gradient background (subtle blue tint)
+  - Primary-colored border instead of gray
+  - Primary-colored avatar ring (instead of gray)
+  - Blue dot indicator (🔵) next to @nickname
+  - Hover effect with stronger primary colors
+  - Makes it clear who are verified platform members vs cash participants
+  - Files: `app/globals.css:56-58`, `app/event/[id]/page.tsx:276, 279, 300`
+
+- **Prevent Duplicate Sign-ups** 🚫
+  - Check if logged-in user is already registered for event
+  - Disable "Pay & Sign Up" button if already registered
+  - Show "Already Signed Up ✓" on disabled button
+  - Display confirmation message: "✓ You're already registered for this event"
+  - Prevents users from accidentally paying twice for same event
+  - Files: `app/globals.css:24-26`, `app/event/[id]/page.tsx:160-162, 329-353`
+
+### Changed
+- **Player List Visual Hierarchy**
+  - Registered users: Light blue gradient with colored borders and avatar rings
+  - Cash participants: Gray gradient (unchanged)
+  - Clear visual separation between user types
+  - Better UI/UX for distinguishing verified members
+
+---
+
 ## [2025-10-05] - Profile & Player List UX Improvements
 
 ### Changed
