@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Navigation Improvements for Profile and Event Pages
+
+### Added
+- **Profile Page Back Button** ⬅️
+  - Added "← Go Back" button at the top of user profile pages
+  - Uses browser history to navigate to previous page
+  - Improves navigation UX when viewing other users' profiles
+  - Files: `app/u/[username]/page.tsx:162-170`
+
+- **Event View Switching for Organizers** 🔄
+  - Added "⚙️ Manage Event" button on public event view (visible only to organizers)
+  - Added "👁️ View as Participant" button on event management page
+  - Organizers can now easily switch between public and management views
+  - Helps organizers see what participants see vs. what they can manage
+  - Files: `app/event/[id]/page.tsx:224-232`, `app/event/[id]/manage/page.tsx:165-171`
+
+---
+
 ## [2025-10-05] - Fix Duplicate Participants on Stripe Payment
 
 ### Fixed

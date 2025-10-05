@@ -210,15 +210,27 @@ export default function EventPage() {
                 <span className="ml-2">{formatCurrency(event.pricePerPlayer)} per player</span>
               </div>
 
-              <button
-                onClick={handleCopyLink}
-                className="mt-4 flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
-              >
-                <span className="text-lg">🔗</span>
-                <span className="text-sm font-medium">
-                  {linkCopied ? t('event.copied') : t('event.copyLink')}
-                </span>
-              </button>
+              <div className="flex gap-4 mt-4">
+                <button
+                  onClick={handleCopyLink}
+                  className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  <span className="text-lg">🔗</span>
+                  <span className="text-sm font-medium">
+                    {linkCopied ? t('event.copied') : t('event.copyLink')}
+                  </span>
+                </button>
+
+                {isOrganizer && (
+                  <Link
+                    href={`/event/${params.id}/manage`}
+                    className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    <span className="text-lg">⚙️</span>
+                    <span className="text-sm font-medium">Manage Event</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
 

@@ -164,9 +164,10 @@ export default function ManageEventPage() {
           <div className="flex space-x-2">
             <button
               onClick={() => router.push(`/event/${event.id}`)}
-              className="btn-secondary"
+              className="btn-secondary flex items-center gap-2"
             >
-              View Public Page
+              <span>👁️</span>
+              <span>View as Participant</span>
             </button>
           </div>
         </div>
