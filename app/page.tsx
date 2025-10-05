@@ -8,6 +8,34 @@ export default function Home() {
   const { user, loading } = useAuth()
   const { t } = useLanguage()
 
+  // Show full-page loading skeleton until auth completes
+  if (loading) {
+    return (
+      <div className="space-y-20 animate-pulse">
+        {/* Hero Section Skeleton */}
+        <div className="text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="h-8 w-48 bg-gray-200 rounded-full mx-auto mb-8"></div>
+            <div className="h-16 w-full max-w-3xl bg-gray-200 rounded-lg mx-auto mb-4"></div>
+            <div className="h-16 w-full max-w-2xl bg-gray-200 rounded-lg mx-auto mb-6"></div>
+            <div className="h-6 w-full max-w-xl bg-gray-200 rounded mx-auto mb-10"></div>
+
+            <div className="flex gap-4 justify-center mb-12">
+              <div className="h-12 w-40 bg-gray-200 rounded-lg"></div>
+              <div className="h-12 w-32 bg-gray-200 rounded-lg"></div>
+            </div>
+
+            <div className="flex items-center justify-center space-x-8">
+              <div className="h-4 w-32 bg-gray-200 rounded"></div>
+              <div className="h-4 w-32 bg-gray-200 rounded"></div>
+              <div className="h-4 w-32 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-20">
       {/* Hero Section */}
@@ -28,13 +56,7 @@ export default function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            {loading ? (
-              /* Loading skeleton */
-              <div className="flex gap-4">
-                <div className="h-12 w-40 bg-gray-200 rounded-lg animate-pulse"></div>
-                <div className="h-12 w-32 bg-gray-200 rounded-lg animate-pulse"></div>
-              </div>
-            ) : user ? (
+            {user ? (
               <>
                 <Link href="/dashboard" className="btn-primary">
                   {t('home.goToDashboard')}
@@ -169,13 +191,7 @@ export default function Home() {
         <h2 className="text-3xl font-bold mb-4">{t('home.readyToOrganize')}</h2>
         <p className="text-primary-100 mb-8 text-lg">{t('home.joinOrganizers')}</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {loading ? (
-            /* Loading skeleton - prevents flash of wrong UI */
-            <div className="flex gap-4">
-              <div className="h-12 w-40 bg-white/20 rounded-xl animate-pulse"></div>
-              <div className="h-12 w-32 bg-white/20 rounded-xl animate-pulse"></div>
-            </div>
-          ) : user ? (
+          {user ? (
             <>
               <Link href="/dashboard" className="bg-white text-primary-600 font-semibold py-3 px-8 rounded-xl hover:bg-gray-50 transition-colors">
                 {t('home.goToDashboard')}

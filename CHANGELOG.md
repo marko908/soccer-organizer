@@ -24,9 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Flash of Logged-Out UI (FOUC)** ⚡
   - Fixed brief flash of logged-out interface on page refresh
-  - Issue: Bottom CTA section showed no buttons during auth loading state
-  - Solution: Added loading skeleton to bottom CTA section (`app/page.tsx:172-177`)
-  - Impact: Smooth loading experience without UI flashing
+  - Issue: Entire page content visible before auth completed, showing wrong UI state
+  - Solution: Full-page loading skeleton until auth completes (`app/page.tsx:12-36`)
+  - Impact: Clean, professional loading experience with no UI flashing
 
 ### Fixed Earlier Today
 - **Critical App Crash Bug** 🚨
