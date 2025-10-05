@@ -26,7 +26,8 @@
       "Bash(chmod:*)",
       "Bash(./stripe.exe --version)",
       "Bash(./stripe.exe listen:*)",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

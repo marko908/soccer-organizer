@@ -38,6 +38,18 @@ export async function POST(request: NextRequest) {
     try {
       const { eventId, participantName, participantEmail, userId, avatarUrl } = session.metadata
 
+      // Check if participant already exists with this payment intent
+      const { data: existingParticipant } = await supabaseAdmin
+        .from('participants')
+        .select('id')
+        .eq('stripe_payment_intent_id', session.payment_intent)
+        .single()
+
+      if (existingParticipant) {
+        console.log(`⏭️ Participant already exists for payment intent ${session.payment_intent}, skipping`)
+        return NextResponse.json({ received: true, skipped: true })
+      }
+
       const { error } = await supabaseAdmin
         .from('participants')
         .insert({
@@ -52,9 +64,9 @@ export async function POST(request: NextRequest) {
 
       if (error) throw error
 
-      console.log(`Participant ${participantName} successfully added to event ${eventId}`)
+      console.log(`✅ Participant ${participantName} successfully added to event ${eventId}`)
     } catch (error) {
-      console.error('Error creating participant:', error)
+      console.error('❌ Error creating participant:', error)
       return NextResponse.json(
         { error: 'Failed to create participant' },
         { status: 500 }

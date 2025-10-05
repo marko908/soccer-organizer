@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Fix Duplicate Participants on Stripe Payment
+
+### Fixed
+- **Duplicate Participant Creation** 🔄
+  - Issue: Participants were being added twice (or more) after successful Stripe payment
+  - Root cause: Stripe webhook fires multiple events for a single payment, webhook wasn't idempotent
+  - Solution: Added duplicate check using `stripe_payment_intent_id` before inserting participant
+  - Webhook now skips insertion if participant already exists for that payment intent
+  - Logs: "⏭️ Participant already exists, skipping" when duplicate detected
+  - Files: `app/api/webhook/route.ts:41-51`
+
+---
+
 ## [2025-10-05] - Fix Stripe Payment Redirect URL
 
 ### Fixed
