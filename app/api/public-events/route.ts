@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
     // Get all upcoming public events
-    const { data: eventsData, error: eventsError } = await supabase
+    const { data: eventsData, error: eventsError } = await supabaseAdmin
       .from('events')
       .select(`
         *,
@@ -25,7 +25,7 @@ export async function GET() {
     // For each event, count paid participants
     const eventsWithParticipants = await Promise.all(
       (eventsData || []).map(async (event) => {
-        const { count } = await supabase
+        const { count } = await supabaseAdmin
           .from('participants')
           .select('*', { count: 'exact', head: true })
           .eq('event_id', event.id)
