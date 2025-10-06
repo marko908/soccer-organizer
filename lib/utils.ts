@@ -3,6 +3,9 @@ export function formatPrice(price: number): string {
 }
 
 export function formatCurrency(amount: number): string {
+  if (amount === 0) {
+    return 'FREE'
+  }
   return `${formatPrice(amount)} PLN`
 }
 

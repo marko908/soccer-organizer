@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-06] - Privacy & UX Improvements for Event Pages
+
+### Changed
+- **Event Detail Page Privacy** 🔒
+  - Progress bar and collection amounts now only visible to event organizers
+  - Non-owners see only player count and available spots
+  - Files: `app/event/[id]/page.tsx:273-294`
+
+- **Free Event Display** 💸
+  - Events with 0 PLN price now display as "FREE" instead of "0.00 PLN"
+  - Applies across all event pages and listings
+  - Files: `lib/utils.ts:5-10`
+
+### Fixed
+- **Events Not Appearing on /events Page** 🐛
+  - Issue: Newly created events weren't showing on public events list
+  - Root cause: Date filtering was too strict, excluding events created today
+  - Solution: Changed filter to include all events from start of today (00:00:00)
+  - Impact: Events created on the same day now appear immediately on /events
+  - Files: `app/api/public-events/route.ts:4-22`
+
+---
+
 ## [2025-10-05] - Fix Date/Time Input to European Format
 
 ### Changed

@@ -271,23 +271,26 @@ export default function EventPage() {
           <div className="lg:w-80">
             <div className="stat-card space-y-6">
               {isOrganizer && (
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm font-semibold text-gray-700">Collection Progress</span>
-                    <span className="text-sm text-gray-600 font-medium">
-                      {formatCurrency(event.collectedAmount)} / {formatCurrency(event.totalCost)}
-                    </span>
+                <>
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-semibold text-gray-700">Collection Progress</span>
+                      <span className="text-sm text-gray-600 font-medium">
+                        {formatCurrency(event.collectedAmount)} / {formatCurrency(event.totalCost)}
+                      </span>
+                    </div>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2 text-right">
+                      {progressPercentage.toFixed(1)}% complete
+                    </div>
                   </div>
-                  <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-2 text-right">
-                    {progressPercentage.toFixed(1)}% complete
-                  </div>
-                </div>
+                  <div className="border-t border-gray-200 pt-6"></div>
+                </>
               )}
 
               <div className="grid grid-cols-2 gap-4">

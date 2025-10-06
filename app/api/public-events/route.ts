@@ -3,7 +3,11 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
-    // Get all upcoming public events
+    // Get all upcoming public events (events from today onwards)
+    // Use start of today to include events happening today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
     const { data: eventsData, error: eventsError } = await supabaseAdmin
       .from('events')
       .select(`
@@ -14,7 +18,7 @@ export async function GET() {
           avatar_url
         )
       `)
-      .gte('date', new Date().toISOString()) // Only future events
+      .gte('date', today.toISOString()) // Events from today onwards
       .order('date', { ascending: true })
 
     if (eventsError) {
