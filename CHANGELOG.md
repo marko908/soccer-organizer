@@ -102,11 +102,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `getFieldTypeIcon(fieldType)` - Returns emoji for field type
   - Files: `lib/utils.ts:49-77`
 
-### Migration Required
-**IMPORTANT:** Run the SQL migration in Supabase before using new features:
-1. Go to Supabase SQL Editor
-2. Run `supabase-add-event-fields.sql`
-3. This will add new columns and update existing events with defaults
+### ⚠️ MIGRATION REQUIRED - READ BEFORE USING
+**The app will not work for creating events until you run the database migration!**
+
+Error you'll see: "Could not find the 'cleats_allowed' column"
+
+**Solution:**
+1. Open Supabase Dashboard → SQL Editor
+2. Copy SQL from `supabase-add-event-fields.sql` OR `DATABASE-MIGRATION-INSTRUCTIONS.md`
+3. Run the SQL query
+4. This adds new columns and updates existing events with defaults
+
+See `DATABASE-MIGRATION-INSTRUCTIONS.md` for detailed step-by-step guide.
 
 ---
 
