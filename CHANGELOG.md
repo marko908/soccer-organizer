@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-05] - Fix Date/Time Input to European Format
+
+### Changed
+- **Date and Time Input Format** 📅
+  - Split datetime-local into separate date and time inputs
+  - Date input: Shows dd/mm/yyyy (European format)
+  - Start Time: 24-hour format (HH:mm)
+  - End Time: 24-hour format (HH:mm)
+  - All on same day (Date + Start Time + End Time in one row)
+  - Files: `app/create/page.tsx:179-228`
+
+### Technical
+- Native `type="date"` respects browser locale (European users see dd/mm/yyyy)
+- Native `type="time"` always uses 24-hour format
+- More user-friendly than combined datetime-local input
+
+---
+
 ## [2025-10-05] - Soccer-Specific Event Fields & Enhanced Event Creation
 
 ### Added

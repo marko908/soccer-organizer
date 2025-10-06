@@ -17,6 +17,7 @@ export default function CreateEvent() {
   const [formData, setFormData] = useState({
     name: '',
     date: '',
+    startTime: '',
     endTime: '',
     location: '',
     totalCost: '',
@@ -36,8 +37,12 @@ export default function CreateEvent() {
     const minPlayers = parseInt(formData.minPlayers)
     const maxPlayers = parseInt(formData.maxPlayers)
     const playersPerTeam = parseInt(formData.playersPerTeam)
-    const eventDate = new Date(formData.date)
-    const endTime = new Date(formData.endTime)
+
+    // Combine date and time for start and end
+    const startDateTime = `${formData.date}T${formData.startTime}`
+    const endDateTime = `${formData.date}T${formData.endTime}`
+    const eventDate = new Date(startDateTime)
+    const endTime = new Date(endDateTime)
     const now = new Date()
     const maxDate = new Date()
     maxDate.setDate(maxDate.getDate() + 90)
@@ -91,13 +96,21 @@ export default function CreateEvent() {
     }
 
     try {
+      // Combine date and time for API
+      const requestData = {
+        ...formData,
+        date: `${formData.date}T${formData.startTime}`,
+        endTime: `${formData.date}T${formData.endTime}`,
+      }
+      delete (requestData as any).startTime // Remove separate time field
+
       const response = await fetch('/api/simple-events', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include', // Important: include cookies
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       })
 
       if (response.ok) {
@@ -163,22 +176,38 @@ export default function CreateEvent() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date & Time
+                Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 id="date"
                 name="date"
                 required
                 className="input"
                 value={formData.date}
                 onChange={handleChange}
-                max="2050-12-31T23:59"
+                max="2050-12-31"
               />
-              <p className="text-xs text-gray-500 mt-1">Up to 90 days in advance</p>
+              <p className="text-xs text-gray-500 mt-1">dd/mm/yyyy format</p>
+            </div>
+
+            <div>
+              <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-2">
+                Start Time
+              </label>
+              <input
+                type="time"
+                id="startTime"
+                name="startTime"
+                required
+                className="input"
+                value={formData.startTime}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">24h format</p>
             </div>
 
             <div>
@@ -186,16 +215,15 @@ export default function CreateEvent() {
                 End Time
               </label>
               <input
-                type="datetime-local"
+                type="time"
                 id="endTime"
                 name="endTime"
                 required
                 className="input"
                 value={formData.endTime}
                 onChange={handleChange}
-                max="2050-12-31T23:59"
               />
-              <p className="text-xs text-gray-500 mt-1">Must be after start time</p>
+              <p className="text-xs text-gray-500 mt-1">24h format</p>
             </div>
           </div>
 
