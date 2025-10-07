@@ -80,18 +80,35 @@ export default function PublicEventsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {events.map((event) => (
+          {events.map((event) => {
+            const now = new Date()
+            const eventStartTime = new Date(event.date)
+            const eventEndTime = new Date(event.endTime)
+            const hasStarted = eventStartTime <= now
+            const hasEnded = eventEndTime <= now
+            const isOngoing = hasStarted && !hasEnded
+
+            return (
             <Link
               key={event.id}
               href={`/event/${event.id}`}
-              className="card hover:shadow-xl transition-all duration-200 cursor-pointer block"
+              className={`card transition-all duration-200 cursor-pointer block ${
+                isOngoing ? 'opacity-60 bg-gray-100 hover:shadow-lg' : 'hover:shadow-xl'
+              }`}
             >
               <div className="flex flex-col lg:flex-row lg:items-center gap-6">
                 {/* Left Section: Event Info */}
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                    {event.name}
-                  </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {event.name}
+                    </h3>
+                    {isOngoing && (
+                      <span className="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded">
+                        In Progress
+                      </span>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-gray-600">
                     <div className="flex items-center gap-2">
@@ -164,7 +181,11 @@ export default function PublicEventsPage() {
                     </div>
 
                     {/* Status Badge */}
-                    {event.availableSpots === 0 ? (
+                    {isOngoing ? (
+                      <div className="bg-yellow-50 text-yellow-700 text-center py-2 rounded-lg text-sm font-semibold">
+                        In Progress
+                      </div>
+                    ) : event.availableSpots === 0 ? (
                       <div className="bg-red-50 text-red-700 text-center py-2 rounded-lg text-sm font-semibold">
                         Event Full
                       </div>
@@ -181,7 +202,8 @@ export default function PublicEventsPage() {
                 </div>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

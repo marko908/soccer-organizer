@@ -11,6 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-07] - Event Status Management & Auto-Hide
+
+### Changed
+- **Event Status Display** 🕐
+  - Events that have started show "In Progress" badge
+  - Ongoing events are greyed out (60% opacity) with yellow badge
+  - Visual indication helps users distinguish between joinable and ongoing games
+  - Files: `app/events/page.tsx:84-110, 184-187`
+
+- **Auto-Hide Ended Events** 🗑️
+  - Events automatically removed from /events list after end_time passes
+  - API now filters by `end_time >= now` instead of `date >= today`
+  - Keeps event listings clean and relevant
+  - Ended events still accessible via direct link for feedback
+  - Files: `app/api/public-events/route.ts:6-20`
+
+### Improved UX
+- **Clear Visual Hierarchy**:
+  - 🟢 Upcoming events: Full opacity, "Join Now" badge
+  - 🟡 Ongoing events: 60% opacity, "In Progress" badge
+  - 🔴 Full events: "Event Full" badge
+  - 🟠 Almost full: "Almost Full!" badge
+
+- **Automatic Cleanup**:
+  - No manual intervention needed to hide ended events
+  - Database stays clean without scheduled jobs
+  - Real-time status updates based on current timestamp
+
+---
+
 ## [2025-10-07] - Player Feedback System & Login Requirements
 
 ### Added

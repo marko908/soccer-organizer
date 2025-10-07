@@ -3,10 +3,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function GET() {
   try {
-    // Get all upcoming public events (events from today onwards)
-    // Use start of today to include events happening today
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // Get all upcoming/ongoing events (exclude only events that have ended)
+    // An event is considered ended when end_time has passed
+    const now = new Date()
 
     const { data: eventsData, error: eventsError } = await supabaseAdmin
       .from('events')
@@ -18,7 +17,7 @@ export async function GET() {
           avatar_url
         )
       `)
-      .gte('date', today.toISOString()) // Events from today onwards
+      .gte('end_time', now.toISOString()) // Only events that haven't ended yet
       .order('date', { ascending: true })
 
     if (eventsError) {
