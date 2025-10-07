@@ -86,8 +86,8 @@ export async function POST(request: NextRequest) {
         transfer_data: {
           destination: organizer.stripe_account_id,
         },
-        // Optional: Platform fee (5% of payment)
-        // application_fee_amount: Math.round(parseFloat(event.price_per_player) * 100 * 0.05),
+        // Platform fee: 15% of payment
+        application_fee_amount: Math.round(parseFloat(event.price_per_player) * 100 * 0.15),
       },
       metadata: {
         eventId: eventId.toString(),

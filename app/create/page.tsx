@@ -378,10 +378,15 @@ export default function CreateEvent() {
           </div>
 
           {formData.totalCost && formData.maxPlayers && (
-            <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-4 rounded-xl border border-primary-200">
+            <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-4 rounded-xl border border-primary-200 space-y-2">
               <p className="text-sm text-primary-800">
                 <strong>Price per player:</strong> {pricePerPlayer} PLN
               </p>
+              <div className="text-xs text-primary-700 border-t border-primary-200 pt-2">
+                <p>💰 <strong>You will receive:</strong> {(parseFloat(pricePerPlayer) * 0.85).toFixed(2)} PLN per player (after 15% platform fee)</p>
+                <p className="mt-1">📊 <strong>Platform fee:</strong> {(parseFloat(pricePerPlayer) * 0.15).toFixed(2)} PLN per player</p>
+                <p className="mt-1">🎯 <strong>Total revenue for full event:</strong> {(parseFloat(pricePerPlayer) * 0.85 * parseInt(formData.maxPlayers)).toFixed(2)} PLN</p>
+              </div>
             </div>
           )}
 
