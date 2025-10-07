@@ -15,6 +15,11 @@ interface User {
   weight?: number
   height?: number
   canCreateEvents: boolean
+  skillLevel?: 'beginner' | 'intermediate' | 'advanced'
+  positionPreference?: 'goalkeeper' | 'defender' | 'midfielder' | 'forward' | 'any'
+  gamesPlayed?: number
+  onTimeRate?: number
+  preferredCities?: string[]
 }
 
 interface AuthContextType {
@@ -102,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Timeout after 10 seconds (increased for cold starts and network delays)
       const queryPromise = supabase
         .from('users')
-        .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events')
+        .select('email, full_name, nickname, role, avatar_url, bio, age, weight, height, can_create_events, skill_level, position_preference, games_played, on_time_rate, preferred_cities')
         .eq('id', userId)
         .single()
 
@@ -158,6 +163,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           weight: profile.weight,
           height: profile.height,
           canCreateEvents: profile.can_create_events || false,
+          skillLevel: profile.skill_level,
+          positionPreference: profile.position_preference,
+          gamesPlayed: profile.games_played || 0,
+          onTimeRate: profile.on_time_rate || 1.0,
+          preferredCities: profile.preferred_cities || [],
         }
         console.log('✅ User data prepared:', userData.nickname)
         return userData

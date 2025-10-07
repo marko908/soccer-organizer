@@ -46,6 +46,11 @@ export async function GET(request: NextRequest) {
       canCreateEvents: profile.can_create_events,
       emailVerified: profile.email_verified,
       nicknameLastChanged: profile.nickname_last_changed,
+      skillLevel: profile.skill_level,
+      positionPreference: profile.position_preference,
+      gamesPlayed: profile.games_played || 0,
+      onTimeRate: profile.on_time_rate || 1.0,
+      preferredCities: profile.preferred_cities || [],
       createdAt: profile.created_at,
       updatedAt: profile.updated_at,
     }
@@ -76,7 +81,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { nickname, bio, age, weight, height, avatarUrl } = body
+    const { nickname, bio, age, weight, height, avatarUrl, skillLevel, positionPreference, preferredCities } = body
 
     // Get current profile to check nickname change restriction
     const { data: currentProfile } = await supabase
@@ -129,6 +134,9 @@ export async function PATCH(request: NextRequest) {
     if (weight !== undefined) updateData.weight = weight
     if (height !== undefined) updateData.height = height
     if (avatarUrl !== undefined) updateData.avatar_url = avatarUrl
+    if (skillLevel !== undefined) updateData.skill_level = skillLevel
+    if (positionPreference !== undefined) updateData.position_preference = positionPreference
+    if (preferredCities !== undefined) updateData.preferred_cities = preferredCities
 
     // Update profile
     const { data: updatedProfile, error: updateError } = await supabase
@@ -162,6 +170,11 @@ export async function PATCH(request: NextRequest) {
       canCreateEvents: updatedProfile.can_create_events,
       emailVerified: updatedProfile.email_verified,
       nicknameLastChanged: updatedProfile.nickname_last_changed,
+      skillLevel: updatedProfile.skill_level,
+      positionPreference: updatedProfile.position_preference,
+      gamesPlayed: updatedProfile.games_played || 0,
+      onTimeRate: updatedProfile.on_time_rate || 1.0,
+      preferredCities: updatedProfile.preferred_cities || [],
       createdAt: updatedProfile.created_at,
       updatedAt: updatedProfile.updated_at,
     }

@@ -18,6 +18,11 @@ interface ProfileData {
   avatarUrl: string
   canCreateEvents: boolean
   nicknameLastChanged?: string
+  skillLevel?: 'beginner' | 'intermediate' | 'advanced'
+  positionPreference?: 'goalkeeper' | 'defender' | 'midfielder' | 'forward' | 'any'
+  gamesPlayed: number
+  onTimeRate: number
+  preferredCities: string[]
 }
 
 export default function ProfilePage() {
@@ -37,6 +42,9 @@ export default function ProfilePage() {
     height: undefined,
     avatarUrl: '/default-avatar.svg',
     canCreateEvents: false,
+    gamesPlayed: 0,
+    onTimeRate: 1.0,
+    preferredCities: [],
   })
 
   const [editMode, setEditMode] = useState(false)
@@ -83,6 +91,9 @@ export default function ProfilePage() {
           age: profileData.age,
           weight: profileData.weight,
           height: profileData.height,
+          skillLevel: profileData.skillLevel,
+          positionPreference: profileData.positionPreference,
+          preferredCities: profileData.preferredCities,
         }),
       })
 
@@ -129,13 +140,22 @@ export default function ProfilePage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setProfileData(prev => ({
       ...prev,
       [name]: name === 'age' || name === 'weight' || name === 'height'
         ? value ? parseFloat(value) : undefined
         : value
+    }))
+  }
+
+  const handleCityToggle = (city: string) => {
+    setProfileData(prev => ({
+      ...prev,
+      preferredCities: prev.preferredCities.includes(city)
+        ? prev.preferredCities.filter(c => c !== city)
+        : [...prev.preferredCities, city]
     }))
   }
 
@@ -300,55 +320,149 @@ export default function ProfilePage() {
             />
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Age
-              </label>
-              <input
-                type="number"
-                name="age"
-                value={profileData.age || ''}
-                onChange={handleChange}
-                disabled={!editMode}
-                className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="25"
-                min="1"
-                max="120"
-              />
+          {/* Soccer Profile */}
+          <div className="pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Soccer Profile</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Skill Level
+                </label>
+                <select
+                  name="skillLevel"
+                  value={profileData.skillLevel || ''}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                  className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                >
+                  <option value="">Select skill level</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Your playing experience level</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Position
+                </label>
+                <select
+                  name="positionPreference"
+                  value={profileData.positionPreference || ''}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                  className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                >
+                  <option value="">Select position</option>
+                  <option value="goalkeeper">Goalkeeper</option>
+                  <option value="defender">Defender</option>
+                  <option value="midfielder">Midfielder</option>
+                  <option value="forward">Forward</option>
+                  <option value="any">Any Position</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Where you like to play</p>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Weight (kg)
-              </label>
-              <input
-                type="number"
-                name="weight"
-                step="0.1"
-                value={profileData.weight || ''}
-                onChange={handleChange}
-                disabled={!editMode}
-                className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="70"
-              />
+            {/* Player Stats (Read-only) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                <label className="block text-sm font-medium text-blue-900 mb-1">
+                  Games Played
+                </label>
+                <p className="text-3xl font-bold text-blue-900">{profileData.gamesPlayed}</p>
+                <p className="text-xs text-blue-700 mt-1">Total games participated in</p>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                <label className="block text-sm font-medium text-green-900 mb-1">
+                  On-Time Rate
+                </label>
+                <p className="text-3xl font-bold text-green-900">{(profileData.onTimeRate * 100).toFixed(0)}%</p>
+                <p className="text-xs text-green-700 mt-1">Percentage of on-time arrivals</p>
+              </div>
             </div>
 
+            {/* Preferred Cities */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Height (cm)
+                Preferred Cities
               </label>
-              <input
-                type="number"
-                name="height"
-                step="0.1"
-                value={profileData.height || ''}
-                onChange={handleChange}
-                disabled={!editMode}
-                className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
-                placeholder="180"
-              />
+              <p className="text-xs text-gray-500 mb-3">Get notified about new events in these cities</p>
+              <div className="flex flex-wrap gap-2">
+                {['Warsaw', 'Krakow', 'Gdansk', 'Wroclaw', 'Poznan', 'Lodz'].map(city => (
+                  <button
+                    key={city}
+                    type="button"
+                    onClick={() => editMode && handleCityToggle(city)}
+                    disabled={!editMode}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      profileData.preferredCities.includes(city)
+                        ? 'bg-primary-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    } ${!editMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                  >
+                    {city}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Physical Stats */}
+          <div className="pt-6 border-t border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Physical Stats</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Age
+                </label>
+                <input
+                  type="number"
+                  name="age"
+                  value={profileData.age || ''}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                  className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                  placeholder="25"
+                  min="1"
+                  max="120"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Weight (kg)
+                </label>
+                <input
+                  type="number"
+                  name="weight"
+                  step="0.1"
+                  value={profileData.weight || ''}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                  className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                  placeholder="70"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Height (cm)
+                </label>
+                <input
+                  type="number"
+                  name="height"
+                  step="0.1"
+                  value={profileData.height || ''}
+                  onChange={handleChange}
+                  disabled={!editMode}
+                  className={`input ${!editMode ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                  placeholder="180"
+                />
+              </div>
             </div>
           </div>
 
