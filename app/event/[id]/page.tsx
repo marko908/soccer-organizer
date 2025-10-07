@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import Image from 'next/image'
 import Link from 'next/link'
+import EventChat from '@/components/EventChat'
 
 interface Participant {
   id: number
@@ -587,9 +588,18 @@ export default function EventPage() {
                     </button>
                   </div>
 
-                  <p className="text-xs text-gray-500 text-center">
-                    Payments are processed securely through Stripe. BLIK payments are supported.
-                  </p>
+                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-2xl">💳</div>
+                      <div>
+                        <div className="font-semibold text-gray-900 text-sm">BLIK Payment Available</div>
+                        <div className="text-xs text-gray-600">Fast mobile payment for Polish users</div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 pl-11">
+                      Payments are processed securely through Stripe. Card and BLIK supported.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -601,6 +611,15 @@ export default function EventPage() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Event Chat Section */}
+      <div className="mt-8">
+        <EventChat
+          eventId={event.id}
+          isParticipant={!!isUserAlreadyRegistered}
+          isOrganizer={!!isOrganizer}
+        />
       </div>
     </div>
   )
