@@ -19,6 +19,7 @@ interface Event {
   name: string
   date: string
   endTime: string
+  city: string
   location: string
   totalCost: number
   minPlayers: number
@@ -164,7 +165,8 @@ export default function ManageEventPage() {
             <p className="text-gray-600">
               {formatDateTime(event.date)}
             </p>
-            <p className="text-gray-600">{event.location}</p>
+            <p className="text-gray-600">🏙️ {event.city}</p>
+            <p className="text-gray-600">📍 {event.location}</p>
           </div>
           <div className="flex space-x-2">
             <button

@@ -11,6 +11,7 @@ interface Event {
   name: string
   date: string
   endTime: string
+  city: string
   location: string
   totalCost: number
   minPlayers: number
@@ -144,7 +145,8 @@ export default function Dashboard() {
                       <p className="text-sm text-gray-600">
                         {formatDateTimeShort(event.date)}
                       </p>
-                      <p className="text-sm text-gray-600">{event.location}</p>
+                      <p className="text-sm text-gray-600">🏙️ {event.city}</p>
+                      <p className="text-sm text-gray-600">📍 {event.location}</p>
                     </div>
                     <div className="flex space-x-2">
                       <Link

@@ -50,6 +50,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `GET /api/public-events` - Returns city field
   - Files: `app/api/simple-events/route.ts`, `app/api/simple-event/[id]/route.ts`, `app/api/public-events/route.ts`
 
+### TypeScript Interfaces Updated
+- **All Event interfaces now include city field:**
+  - `app/event/[id]/page.tsx` - Event detail page
+  - `app/events/page.tsx` - Public events list
+  - `app/dashboard/page.tsx` - User dashboard
+  - `app/event/[id]/manage/page.tsx` - Event management
+  - `app/u/[username]/page.tsx` - User profile events
+  - Ensures type safety across the entire application
+
 ### Migration Required
 **Before creating new events, run the SQL migration:**
 1. Open Supabase Dashboard → SQL Editor

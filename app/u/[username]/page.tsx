@@ -28,6 +28,7 @@ interface Event {
   title: string
   date: string
   endTime?: string
+  city: string
   location: string
   participantLimit: number
   participantCount: number
