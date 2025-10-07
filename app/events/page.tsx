@@ -30,11 +30,47 @@ interface Event {
 
 export default function PublicEventsPage() {
   const [events, setEvents] = useState<Event[]>([])
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Filters state
+  const [selectedCity, setSelectedCity] = useState<string>('all')
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 200])
+  const [dateRange, setDateRange] = useState<{ from: string; to: string }>({ from: '', to: '' })
+  const [spotsFilter, setSpotsFilter] = useState<string>('all') // 'all', 'available', 'limited'
+  const [sortBy, setSortBy] = useState<string>('date') // 'date', 'price', 'spots'
 
   useEffect(() => {
     fetchEvents()
   }, [])
+
+  useEffect(() => {
+    // Load filters from localStorage
+    const savedFilters = localStorage.getItem('eventFilters')
+    if (savedFilters) {
+      const filters = JSON.parse(savedFilters)
+      setSelectedCity(filters.city || 'all')
+      setPriceRange(filters.priceRange || [0, 200])
+      setDateRange(filters.dateRange || { from: '', to: '' })
+      setSpotsFilter(filters.spotsFilter || 'all')
+      setSortBy(filters.sortBy || 'date')
+    }
+  }, [])
+
+  useEffect(() => {
+    // Save filters to localStorage
+    localStorage.setItem('eventFilters', JSON.stringify({
+      city: selectedCity,
+      priceRange,
+      dateRange,
+      spotsFilter,
+      sortBy,
+    }))
+  }, [selectedCity, priceRange, dateRange, spotsFilter, sortBy])
+
+  useEffect(() => {
+    applyFilters()
+  }, [events, selectedCity, priceRange, dateRange, spotsFilter, sortBy])
 
   const fetchEvents = async () => {
     try {
@@ -52,6 +88,60 @@ export default function PublicEventsPage() {
     }
   }
 
+  const applyFilters = () => {
+    let filtered = [...events]
+
+    // City filter
+    if (selectedCity !== 'all') {
+      filtered = filtered.filter(event => event.city === selectedCity)
+    }
+
+    // Price filter
+    filtered = filtered.filter(event =>
+      event.pricePerPlayer >= priceRange[0] && event.pricePerPlayer <= priceRange[1]
+    )
+
+    // Date range filter
+    if (dateRange.from) {
+      const fromDate = new Date(dateRange.from)
+      filtered = filtered.filter(event => new Date(event.date) >= fromDate)
+    }
+    if (dateRange.to) {
+      const toDate = new Date(dateRange.to)
+      toDate.setHours(23, 59, 59, 999) // End of day
+      filtered = filtered.filter(event => new Date(event.date) <= toDate)
+    }
+
+    // Spots filter
+    if (spotsFilter === 'available') {
+      filtered = filtered.filter(event => event.availableSpots > 0)
+    } else if (spotsFilter === 'limited') {
+      filtered = filtered.filter(event => event.availableSpots > 0 && event.availableSpots <= 3)
+    }
+
+    // Sort
+    if (sortBy === 'date') {
+      filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    } else if (sortBy === 'price') {
+      filtered.sort((a, b) => a.pricePerPlayer - b.pricePerPlayer)
+    } else if (sortBy === 'spots') {
+      filtered.sort((a, b) => b.availableSpots - a.availableSpots)
+    }
+
+    setFilteredEvents(filtered)
+  }
+
+  const resetFilters = () => {
+    setSelectedCity('all')
+    setPriceRange([0, 200])
+    setDateRange({ from: '', to: '' })
+    setSpotsFilter('all')
+    setSortBy('date')
+  }
+
+  // Get unique cities from events
+  const cities = Array.from(new Set(events.map(e => e.city))).sort()
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -67,7 +157,169 @@ export default function PublicEventsPage() {
         <p className="text-gray-600">Find and join soccer games in your area</p>
       </div>
 
-      {events.length === 0 ? (
+      {/* Filters Section */}
+      <div className="card mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+          <button
+            onClick={resetFilters}
+            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Reset Filters
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* City Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              City
+            </label>
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="input"
+            >
+              <option value="all">All Cities</option>
+              {cities.map(city => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Spots Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Availability
+            </label>
+            <select
+              value={spotsFilter}
+              onChange={(e) => setSpotsFilter(e.target.value)}
+              className="input"
+            >
+              <option value="all">All Events</option>
+              <option value="available">With Available Spots</option>
+              <option value="limited">Almost Full (≤3 spots)</option>
+            </select>
+          </div>
+
+          {/* Sort By */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="input"
+            >
+              <option value="date">Date (Nearest First)</option>
+              <option value="price">Price (Low to High)</option>
+              <option value="spots">Available Spots (Most First)</option>
+            </select>
+          </div>
+
+          {/* Date From */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              From Date
+            </label>
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+              className="input"
+            />
+          </div>
+
+          {/* Date To */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              To Date
+            </label>
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+              className="input"
+            />
+          </div>
+
+          {/* Price Range */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price Range: {priceRange[0]} - {priceRange[1]} PLN
+            </label>
+            <div className="flex gap-2 items-center">
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={priceRange[0]}
+                onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                className="flex-1"
+              />
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={priceRange[1]}
+                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                className="flex-1"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Active Filters Summary */}
+        {(selectedCity !== 'all' || spotsFilter !== 'all' || dateRange.from || dateRange.to) && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm text-gray-600">Active filters:</span>
+              {selectedCity !== 'all' && (
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm rounded-full">
+                  {selectedCity}
+                </span>
+              )}
+              {spotsFilter !== 'all' && (
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm rounded-full">
+                  {spotsFilter === 'available' ? 'Available' : 'Almost Full'}
+                </span>
+              )}
+              {dateRange.from && (
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm rounded-full">
+                  From: {dateRange.from}
+                </span>
+              )}
+              {dateRange.to && (
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 text-sm rounded-full">
+                  To: {dateRange.to}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Results Count */}
+      {!loading && (
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {filteredEvents.length} of {events.length} events
+        </div>
+      )}
+
+      {filteredEvents.length === 0 && events.length > 0 ? (
+        <div className="card text-center py-12">
+          <div className="text-6xl mb-4">🔍</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Events Match Your Filters</h2>
+          <p className="text-gray-600 mb-6">
+            Try adjusting your filters to see more events.
+          </p>
+          <button onClick={resetFilters} className="btn-primary inline-block">
+            Reset Filters
+          </button>
+        </div>
+      ) : events.length === 0 ? (
         <div className="card text-center py-12">
           <div className="text-6xl mb-4">⚽</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">No Events Available</h2>
@@ -80,7 +332,7 @@ export default function PublicEventsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {events.map((event) => {
+          {filteredEvents.map((event) => {
             const now = new Date()
             const eventStartTime = new Date(event.date)
             const eventEndTime = new Date(event.endTime)
