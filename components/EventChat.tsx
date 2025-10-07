@@ -37,7 +37,8 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
   useEffect(() => {
     if (canAccessChat) {
       fetchMessages()
-      subscribeToMessages()
+      const cleanup = subscribeToMessages()
+      return cleanup
     }
   }, [eventId, canAccessChat])
 
@@ -82,8 +83,14 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
   }
 
   const subscribeToMessages = () => {
+    console.log(`🔔 Setting up realtime subscription for event ${eventId}`)
+
     const channel = supabase
-      .channel(`chat:${eventId}`)
+      .channel(`chat:${eventId}`, {
+        config: {
+          broadcast: { self: true }
+        }
+      })
       .on(
         'postgres_changes',
         {
@@ -93,6 +100,8 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
           filter: `event_id=eq.${eventId}`,
         },
         async (payload) => {
+          console.log('📨 New message received:', payload)
+
           // Fetch the new message with user data
           const { data, error } = await supabase
             .from('chat_messages')
@@ -112,13 +121,25 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
             .single()
 
           if (!error && data) {
-            setMessages((prev) => [...prev, data])
+            console.log('✅ Adding message to state:', data)
+            setMessages((prev) => {
+              // Prevent duplicates
+              if (prev.some(msg => msg.id === data.id)) {
+                return prev
+              }
+              return [...prev, data]
+            })
+          } else {
+            console.error('❌ Error fetching message:', error)
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('🔌 Subscription status:', status)
+      })
 
     return () => {
+      console.log('🔴 Cleaning up subscription')
       supabase.removeChannel(channel)
     }
   }
