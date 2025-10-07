@@ -73,6 +73,16 @@ export default function EventPage() {
     }
   }
 
+  const handleWhatsAppShare = () => {
+    const text = encodeURIComponent(`⚽ Join me for soccer!\n\n${event?.name}\n📅 ${formatDateTimeShort(event?.date || '')}\n📍 ${event?.location}\n💰 ${formatCurrency(event?.pricePerPlayer || 0)}\n\n${window.location.href}`)
+    window.open(`https://wa.me/?text=${text}`, '_blank')
+  }
+
+  const handleMessengerShare = () => {
+    const url = encodeURIComponent(window.location.href)
+    window.open(`https://www.facebook.com/dialog/send?link=${url}&app_id=&redirect_uri=${url}`, '_blank')
+  }
+
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
 
@@ -254,18 +264,45 @@ export default function EventPage() {
                 <span className="ml-2">{formatCurrency(event.pricePerPlayer)} per player</span>
               </div>
 
-              <div className="flex gap-4 mt-4">
-                <button
-                  onClick={handleCopyLink}
-                  className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
-                >
-                  <span className="text-lg">🔗</span>
-                  <span className="text-sm font-medium">
-                    {linkCopied ? t('event.copied') : t('event.copyLink')}
-                  </span>
-                </button>
+              {/* Share Section */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Share Event</h3>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handleWhatsAppShare}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    <span className="text-lg">💬</span>
+                    <span>WhatsApp</span>
+                  </button>
 
-                {isOrganizer && (
+                  <button
+                    onClick={handleMessengerShare}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors text-sm font-medium"
+                  >
+                    <span className="text-lg">📨</span>
+                    <span>Messenger</span>
+                  </button>
+
+                  <button
+                    onClick={handleCopyLink}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                      linkCopied
+                        ? 'bg-green-50 text-green-700 border-2 border-green-300'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <span className="text-lg">{linkCopied ? '✓' : '🔗'}</span>
+                    <span>
+                      {linkCopied ? t('event.copied') : t('event.copyLink')}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Organizer Actions */}
+              {isOrganizer && (
+                <div className="mt-4">
                   <Link
                     href={`/event/${params.id}/manage`}
                     className="flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors"
@@ -273,8 +310,8 @@ export default function EventPage() {
                     <span className="text-lg">⚙️</span>
                     <span className="text-sm font-medium">Manage Event</span>
                   </Link>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
