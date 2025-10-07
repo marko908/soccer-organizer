@@ -172,13 +172,16 @@ export default function EventPage() {
 
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
   const isOrganizer = user && event && user.id === event.organizerId
+  const isFreeEvent = event.pricePerPlayer === 0
 
   // Check if current user is already registered for this event
   const isUserAlreadyRegistered = user && event.participants.some(p =>
     p.userId === user.id || p.name.includes(`@${user.nickname}`)
   )
 
-  // Check if event has ended and user participated
+  // Check if event has started or ended
+  const eventStartTime = new Date(event.date)
+  const eventHasStarted = eventStartTime <= new Date()
   const eventHasEnded = event.endTime && new Date(event.endTime) < new Date()
   const canGiveFeedbackToOrganizer = user && eventHasEnded && isUserAlreadyRegistered && !isOrganizer
 
@@ -318,7 +321,7 @@ export default function EventPage() {
 
           <div className="lg:w-80">
             <div className="stat-card space-y-6">
-              {isOrganizer && (
+              {isOrganizer && !isFreeEvent && (
                 <>
                   <div>
                     <div className="flex justify-between items-center mb-3">
@@ -477,7 +480,15 @@ export default function EventPage() {
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Join the Game</h2>
 
-          {!user ? (
+          {eventHasStarted ? (
+            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="text-4xl mb-4">⏰</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Event Has Started</h3>
+              <p className="text-gray-600">
+                This event has already begun. Registration is closed.
+              </p>
+            </div>
+          ) : !user ? (
             <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <div className="text-4xl mb-4">🔐</div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Account Required</h3>

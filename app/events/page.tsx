@@ -339,6 +339,7 @@ export default function PublicEventsPage() {
             const hasStarted = eventStartTime <= now
             const hasEnded = eventEndTime <= now
             const isOngoing = hasStarted && !hasEnded
+            const isFreeEvent = event.pricePerPlayer === 0
 
             return (
             <Link
@@ -346,6 +347,8 @@ export default function PublicEventsPage() {
               href={`/event/${event.id}`}
               className={`card transition-all duration-200 cursor-pointer block ${
                 isOngoing ? 'opacity-60 bg-gray-100 hover:shadow-lg' : 'hover:shadow-xl'
+              } ${
+                isFreeEvent ? 'border-2 border-green-400' : ''
               }`}
             >
               <div className="flex flex-col lg:flex-row lg:items-center gap-6">
@@ -416,8 +419,8 @@ export default function PublicEventsPage() {
                   <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Price</span>
-                      <span className="text-xl font-bold text-primary-600">
-                        {formatCurrency(event.pricePerPlayer)}
+                      <span className={`text-xl font-bold ${isFreeEvent ? 'text-green-600' : 'text-primary-600'}`}>
+                        {isFreeEvent ? 'FREE' : formatCurrency(event.pricePerPlayer)}
                       </span>
                     </div>
 
