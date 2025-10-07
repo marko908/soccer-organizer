@@ -27,7 +27,7 @@ export async function GET(
     // Get all participants for this event
     const { data: participants, error: participantsError } = await supabase
       .from('participants')
-      .select('id, name, email, payment_status, created_at, avatar_url, user_id')
+      .select('id, name, email, payment_status, created_at, avatar_url, user_id, stripe_payment_intent_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
 
@@ -71,6 +71,7 @@ export async function GET(
         userId: p.user_id,
         paymentStatus: p.payment_status,
         createdAt: p.created_at,
+        stripePaymentIntentId: p.stripe_payment_intent_id,
       })),
       collectedAmount: paidParticipants * parseFloat(event.price_per_player),
       availableSpots: event.max_players - paidParticipants,
