@@ -357,37 +357,6 @@ export default function EventPage() {
                 <div className="text-2xl">→</div>
               </div>
             </button>
-
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <details className="text-sm text-gray-600">
-                <summary className="cursor-pointer font-medium text-gray-700 mb-2">
-                  📋 Available Feedback Categories
-                </summary>
-                <div className="mt-2 space-y-2 pl-4">
-                  <div>
-                    <strong className="text-green-700">Praise:</strong>
-                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
-                      <li>🌟 Świetna organizacja</li>
-                      <li>💬 Dobra komunikacja</li>
-                      <li>⚽ Zapewnił sprzęt</li>
-                      <li>🤝 Sprawiedliwe drużyny</li>
-                      <li>😊 Przyjazna atmosfera</li>
-                      <li>⏰ Punktualność</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <strong className="text-red-700">Report:</strong>
-                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
-                      <li>📅 Źle zorganizowane</li>
-                      <li>💰 Problemy z płatnością</li>
-                      <li>🕐 Złe zarządzanie czasem</li>
-                      <li>📢 Brak komunikacji</li>
-                      <li>⚠️ Nieprofesjonalne zachowanie</li>
-                    </ul>
-                  </div>
-                </div>
-              </details>
-            </div>
           </div>
         </div>
       )}

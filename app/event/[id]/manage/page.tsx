@@ -254,36 +254,6 @@ export default function ManageEventPage() {
                 </button>
               ))}
             </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <details className="text-sm text-gray-600">
-                <summary className="cursor-pointer font-medium text-gray-700 mb-2">
-                  📋 Available Feedback Categories
-                </summary>
-                <div className="mt-2 space-y-2 pl-4">
-                  <div>
-                    <strong className="text-green-700">Praise:</strong>
-                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
-                      <li>⭐ MVP meczu</li>
-                      <li>🤝 Gracz zespołowy</li>
-                      <li>😊 Pozytywna energia</li>
-                      <li>✅ Fair play</li>
-                      <li>🛠️ Pomocny w organizacji</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <strong className="text-red-700">Report:</strong>
-                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
-                      <li>🚫 Nie pojawił się</li>
-                      <li>⏰ Spóźnienie (&gt;15 min)</li>
-                      <li>😠 Wulgarność/Agresja</li>
-                      <li>⚠️ Zły fair play</li>
-                      <li>🚪 Wyszedł wcześniej przed końcem</li>
-                    </ul>
-                  </div>
-                </div>
-              </details>
-            </div>
           </div>
         </div>
       )}
