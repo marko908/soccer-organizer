@@ -11,6 +11,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-07] - Major Feature Update: Profiles, Filters, Chat & Sharing
+
+### Added
+- **Enhanced Player Profiles** ⚽
+  - Skill level selection (beginner/intermediate/advanced)
+  - Position preference (goalkeeper/defender/midfielder/forward/any)
+  - Games played counter (auto-incremented on payment)
+  - On-time rate tracking (defaults to 100%)
+  - Preferred cities multi-select for notifications
+  - Visual stats cards with color-coded badges
+  - Reorganized profile sections: Soccer Profile + Physical Stats
+  - Files: `app/profile/page.tsx`, `app/api/profile/route.ts`, `contexts/AuthContext.tsx`
+
+- **Event Filters & Search** 🔍
+  - City filter (dynamic dropdown from available events)
+  - Date range picker (from/to dates)
+  - Price range dual slider (0-200 PLN)
+  - Availability filter (all/available/almost full)
+  - Sort options (date/price/spots)
+  - Filter persistence via localStorage
+  - Active filters summary display
+  - Results count indicator
+  - Empty state for no matching results
+  - Files: `app/events/page.tsx`
+
+- **Real-Time Chat System** 💬
+  - Live event chat with Supabase Realtime subscriptions
+  - Access restricted to paid participants and organizers
+  - Auto-scroll to latest messages
+  - Message timestamps with relative time display
+  - User avatars and nicknames in messages
+  - Character counter (1000 char limit)
+  - Live indicator badge
+  - Responsive 600px height chat container
+  - Files: `components/EventChat.tsx`, `app/event/[id]/page.tsx`
+
+- **Social Sharing** 📲
+  - WhatsApp share with pre-filled event details
+  - Facebook Messenger share button
+  - Improved copy link with visual feedback
+  - Share section with organized layout
+  - Mobile-friendly button design
+  - Brand-colored buttons (green/blue)
+  - Files: `app/event/[id]/page.tsx`
+
+- **BLIK Payment Highlighting** 💳
+  - Prominent BLIK badge on payment form
+  - Blue/purple gradient card design
+  - Mobile payment icon and description
+  - Clear messaging for Polish users
+  - Files: `app/event/[id]/page.tsx`
+
+### Changed
+- **15% Platform Fee** 💰
+  - Updated from commented 5% to active 15% fee
+  - Fee breakdown display on event creation form
+  - Shows organizer revenue per player and total
+  - Transparent pricing calculations
+  - Files: `app/api/simple-checkout/route.ts`, `app/create/page.tsx`
+
+### Database Migration
+- **Run Required**: `supabase-add-chat-profiles-notifications.sql`
+  - New columns: skill_level, position_preference, games_played, on_time_rate, preferred_cities
+  - New table: chat_messages with RLS policies
+  - New table: user_notification_preferences
+  - New table: notification_log
+  - Triggers for games_played auto-increment
+  - Helper functions for chat access control
+
+### Technical Improvements
+- Added Supabase Realtime channel subscriptions
+- Implemented localStorage for filter persistence
+- Enhanced type safety with new profile fields
+- Improved mobile responsiveness throughout
+- Better empty states and loading indicators
+
+---
+
 ## [2025-10-07] - Event Status Management & Auto-Hide
 
 ### Changed
