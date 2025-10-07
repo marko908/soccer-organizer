@@ -354,9 +354,30 @@ notification_log: (NEW)
 
 ---
 
-## 🐛 KNOWN ISSUES
+## 🐛 KNOWN ISSUES & FIXES
 
-None reported yet. Please test and report any issues found.
+### ✅ Fixed Issues:
+
+**1. Real-time chat not updating without refresh** (Fixed: 2025-10-07 17:30)
+- **Problem:** Messages required page refresh to appear
+- **Cause:** Realtime subscription not properly configured
+- **Solution:**
+  - Fixed useEffect cleanup in EventChat component
+  - Added `broadcast: { self: true }` config
+  - Enabled Realtime on `chat_messages` table in Supabase
+  - Added duplicate message prevention
+- **Files:** `components/EventChat.tsx`, `supabase-enable-realtime.sql`
+- **Status:** ✅ Working - messages now appear instantly
+
+**2. Cash payment failing with updated_at error** (Fixed: 2025-10-07 17:35)
+- **Problem:** "Could not find the 'updated_at' column of 'participants'"
+- **Cause:** Missing `updated_at` column in participants table
+- **Solution:** Added column with auto-update trigger
+- **Files:** `supabase-fix-participants-updated-at.sql`
+- **Status:** ✅ Working - cash payments now succeed
+
+### 📝 No Current Issues
+All reported issues have been resolved. Continue testing!
 
 ---
 
