@@ -156,6 +156,10 @@ export default function ManageEventPage() {
   const isAdmin = user.role === 'ADMIN'
   const progressPercentage = (event.collectedAmount / event.totalCost) * 100
 
+  // Check if event has ended (after end_time)
+  const eventHasEnded = event.endTime && new Date(event.endTime) < new Date()
+  const canGiveFeedback = eventHasEnded && event.participants.length > 0
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="card">
@@ -208,6 +212,81 @@ export default function ManageEventPage() {
           {progressPercentage.toFixed(1)}% funded
         </div>
       </div>
+
+      {/* Feedback Section - Only shown after event ends */}
+      {canGiveFeedback && (
+        <div className="card bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="text-3xl">⭐</div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Event Feedback
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                The event has ended. You can now give feedback to players who participated.
+                This helps maintain quality and accountability in our community.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <h3 className="font-medium text-gray-900 mb-3">Rate Players</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Click on any player below to give them feedback (praise or report).
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {event.participants.map((participant) => (
+                <button
+                  key={participant.id}
+                  className="text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 hover:border-primary-400 transition-all"
+                  onClick={() => {
+                    alert(`Feedback UI for ${participant.name} - Coming soon!`)
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">{participant.name}</div>
+                      <div className="text-xs text-gray-500">Click to give feedback</div>
+                    </div>
+                    <div className="text-gray-400">→</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <details className="text-sm text-gray-600">
+                <summary className="cursor-pointer font-medium text-gray-700 mb-2">
+                  📋 Available Feedback Categories
+                </summary>
+                <div className="mt-2 space-y-2 pl-4">
+                  <div>
+                    <strong className="text-green-700">Praise:</strong>
+                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
+                      <li>⭐ MVP meczu</li>
+                      <li>🤝 Gracz zespołowy</li>
+                      <li>😊 Pozytywna energia</li>
+                      <li>✅ Fair play</li>
+                      <li>🛠️ Pomocny w organizacji</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-red-700">Report:</strong>
+                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
+                      <li>🚫 Nie pojawił się</li>
+                      <li>⏰ Spóźnienie (&gt;15 min)</li>
+                      <li>😠 Wulgarność/Agresja</li>
+                      <li>⚠️ Zły fair play</li>
+                      <li>🚪 Wyszedł wcześniej przed końcem</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="card">

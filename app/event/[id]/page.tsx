@@ -167,6 +167,10 @@ export default function EventPage() {
     p.userId === user.id || p.name.includes(`@${user.nickname}`)
   )
 
+  // Check if event has ended and user participated
+  const eventHasEnded = event.endTime && new Date(event.endTime) < new Date()
+  const canGiveFeedbackToOrganizer = user && eventHasEnded && isUserAlreadyRegistered && !isOrganizer
+
   // Helper function to parse participant name
   const parseParticipantName = (name: string) => {
     const atIndex = name.lastIndexOf(' @')
@@ -323,13 +327,89 @@ export default function EventPage() {
         </div>
       </div>
 
+      {/* Feedback for Organizer - Only shown to participants after event ends */}
+      {canGiveFeedbackToOrganizer && (
+        <div className="card bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="text-3xl">💬</div>
+            <div className="flex-1">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Rate the Organizer
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                The event has ended. Help improve future events by giving feedback to the organizer.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <button
+              className="w-full p-4 bg-gradient-to-r from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-all"
+              onClick={() => {
+                alert('Feedback UI for organizer - Coming soon!')
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <div className="font-medium text-gray-900 mb-1">Give Feedback to Organizer</div>
+                  <div className="text-sm text-gray-600">Share your experience with this event</div>
+                </div>
+                <div className="text-2xl">→</div>
+              </div>
+            </button>
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <details className="text-sm text-gray-600">
+                <summary className="cursor-pointer font-medium text-gray-700 mb-2">
+                  📋 Available Feedback Categories
+                </summary>
+                <div className="mt-2 space-y-2 pl-4">
+                  <div>
+                    <strong className="text-green-700">Praise:</strong>
+                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
+                      <li>🌟 Świetna organizacja</li>
+                      <li>💬 Dobra komunikacja</li>
+                      <li>⚽ Zapewnił sprzęt</li>
+                      <li>🤝 Sprawiedliwe drużyny</li>
+                      <li>😊 Przyjazna atmosfera</li>
+                      <li>⏰ Punktualność</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-red-700">Report:</strong>
+                    <ul className="list-disc list-inside text-xs mt-1 space-y-1">
+                      <li>📅 Źle zorganizowane</li>
+                      <li>💰 Problemy z płatnością</li>
+                      <li>🕐 Złe zarządzanie czasem</li>
+                      <li>📢 Brak komunikacji</li>
+                      <li>⚠️ Nieprofesjonalne zachowanie</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Registered Players ({event.participants.length})
           </h2>
 
-          {event.participants.length > 0 ? (
+          {!user ? (
+            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Login Required</h3>
+              <p className="text-gray-600 mb-4">
+                Sign in to see who's playing and join the game
+              </p>
+              <Link href="/login" className="btn-primary inline-block">
+                Login
+              </Link>
+            </div>
+          ) : event.participants.length > 0 ? (
             <div className="space-y-2">
               {event.participants.map((participant, index) => {
                 const { fullName, nickname } = parseParticipantName(participant.name)
@@ -390,7 +470,23 @@ export default function EventPage() {
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Join the Game</h2>
 
-          {event.availableSpots > 0 ? (
+          {!user ? (
+            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <div className="text-4xl mb-4">🔐</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Account Required</h3>
+              <p className="text-gray-600 mb-4">
+                You need to be logged in to join events. This helps us maintain accountability and prevent no-shows.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Link href="/login" className="btn-primary">
+                  Login
+                </Link>
+                <Link href="/register" className="btn-secondary">
+                  Create Account
+                </Link>
+              </div>
+            </div>
+          ) : event.availableSpots > 0 ? (
             <div className="space-y-4">
               {!showPaymentForm ? (
                 <div className="text-center">

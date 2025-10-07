@@ -11,6 +11,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-07] - Player Feedback System & Login Requirements
+
+### Added
+- **Player Feedback System** ⭐ (Placeholder UI)
+  - Complete feedback/reputation system schema for post-event reviews
+  - Organizers can rate players after event ends
+  - Players can rate organizers after event ends
+  - Two-way accountability system
+  - Files: `supabase-add-feedback-system.sql`
+
+- **Feedback Categories for Players** (from Organizer):
+  - **Reports**: Nie pojawił się, Spóźnienie, Wulgarność/Agresja, Zły fair play, Wyszedł wcześniej
+  - **Praise**: MVP meczu, Gracz zespołowy, Pozytywna energia, Fair play, Pomocny w organizacji
+
+- **Feedback Categories for Organizers** (from Players):
+  - **Reports**: Źle zorganizowane, Problemy z płatnością, Złe zarządzanie czasem, Brak komunikacji, Nieprofesjonalne zachowanie
+  - **Praise**: Świetna organizacja, Dobra komunikacja, Zapewnił sprzęt, Sprawiedliwe drużyny, Przyjazna atmosfera, Punktualność
+
+- **Feedback UI Components**:
+  - Organizer page shows player rating UI after event ends
+  - Event page shows organizer rating UI for participants after event ends
+  - Collapsible category lists showing all available feedback options
+  - Placeholder alerts for actual feedback submission
+  - Files: `app/event/[id]/manage/page.tsx:217-289`, `app/event/[id]/page.tsx:330-393`
+
+### Changed
+- **Login Required for Participation** 🔐
+  - Users must be logged in to see participant lists
+  - Users must be logged in to join events
+  - Shows clear login prompts with call-to-action buttons
+  - Helps maintain accountability and prevent anonymous no-shows
+  - Files: `app/event/[id]/page.tsx:332-342, 404-419`
+
+### Database
+- **New Table: `event_feedback`**
+  - Stores all feedback between players and organizers
+  - Fields: event_id, from_user_id, to_user_id, feedback_type, feedback_target, category, comment
+  - Constraint: One feedback per user per event (prevents spam)
+  - Constraint: No self-feedback allowed
+  - RLS policies: Users can only give feedback if they participated/organized event
+
+- **Helper Functions**:
+  - `user_participated_in_event()` - Checks if user was a paid participant
+  - `user_organized_event()` - Checks if user organized the event
+  - `event_has_ended()` - Checks if event end time has passed
+
+- **RLS Policies**:
+  - Users can view feedback they gave or received
+  - Feedback can only be given after event ends
+  - Organizers can rate participants, participants can rate organizers
+  - Feedback can be updated/deleted within 48 hours
+
+### Security & Accountability
+- **Login Requirement Benefits**:
+  - All participants have verified accounts
+  - Enables reputation tracking and accountability
+  - Reduces no-shows and unprofessional behavior
+  - Organizers can identify reliable players
+  - Players can identify quality organizers
+
+### Future Implementation
+- Backend API for submitting feedback
+- Reputation score calculation
+- Badge system based on feedback
+- Filtering events by organizer reputation
+- Player profiles showing feedback history
+- Automatic warnings/bans for low-reputation users
+
+---
+
 ## [2025-10-07] - Events List Redesign & City Field
 
 ### Changed
