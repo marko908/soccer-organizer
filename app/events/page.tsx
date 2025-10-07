@@ -10,6 +10,7 @@ interface Event {
   name: string
   date: string
   endTime: string
+  city: string
   location: string
   totalCost: number
   minPlayers: number
@@ -78,91 +79,106 @@ export default function PublicEventsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-4">
           {events.map((event) => (
             <Link
               key={event.id}
               href={`/event/${event.id}`}
-              className="card hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+              className="card hover:shadow-xl transition-all duration-200 cursor-pointer block"
             >
-              {/* Event Header */}
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                  {event.name}
-                </h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <span>📅</span>
-                  <span>{formatDateTimeShort(event.date)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                  <span>⏰</span>
-                  <span>{formatTimeRange(event.date, event.endTime)}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                  <span>📍</span>
-                  <span className="line-clamp-1">{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                  <span>{getFieldTypeIcon(event.fieldType)}</span>
-                  <span>{formatFieldType(event.fieldType)} • {event.playersPerTeam}v{event.playersPerTeam}</span>
-                </div>
-              </div>
+              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                {/* Left Section: Event Info */}
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    {event.name}
+                  </h3>
 
-              {/* Organizer */}
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
-                  <Image
-                    src={event.organizer.avatarUrl}
-                    alt={event.organizer.fullName}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-900">
-                    {event.organizer.fullName}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📅</span>
+                      <span>{formatDateTimeShort(event.date)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⏰</span>
+                      <span>{formatTimeRange(event.date, event.endTime)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🏙️</span>
+                      <span>{event.city}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{getFieldTypeIcon(event.fieldType)}</span>
+                      <span>{formatFieldType(event.fieldType)} • {event.playersPerTeam}v{event.playersPerTeam}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 sm:col-span-2">
+                      <span className="text-lg">📍</span>
+                      <span className="line-clamp-1">{event.location}</span>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    @{event.organizer.nickname}
+
+                  {/* Organizer */}
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200">
+                      <Image
+                        src={event.organizer.avatarUrl}
+                        alt={event.organizer.fullName}
+                        width={40}
+                        height={40}
+                        className="object-cover"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        Organized by {event.organizer.fullName}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        @{event.organizer.nickname}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-
-              {/* Event Stats */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Price per player</span>
-                  <span className="text-lg font-bold text-primary-600">
-                    {formatCurrency(event.pricePerPlayer)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Available spots</span>
-                  <span className={`text-sm font-semibold ${
-                    event.availableSpots === 0 ? 'text-red-600' :
-                    event.availableSpots <= 3 ? 'text-orange-600' :
-                    'text-green-600'
-                  }`}>
-                    {event.availableSpots} / {event.maxPlayers}
-                  </span>
                 </div>
 
-                {/* Status Badge */}
-                {event.availableSpots === 0 ? (
-                  <div className="bg-red-50 text-red-700 text-center py-2 rounded-lg text-sm font-semibold">
-                    Event Full
+                {/* Right Section: Stats & Status */}
+                <div className="lg:w-64 flex-shrink-0">
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Price</span>
+                      <span className="text-xl font-bold text-primary-600">
+                        {formatCurrency(event.pricePerPlayer)}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Spots</span>
+                      <span className={`text-sm font-semibold ${
+                        event.availableSpots === 0 ? 'text-red-600' :
+                        event.availableSpots <= 3 ? 'text-orange-600' :
+                        'text-green-600'
+                      }`}>
+                        {event.availableSpots} / {event.maxPlayers} available
+                      </span>
+                    </div>
+
+                    {/* Status Badge */}
+                    {event.availableSpots === 0 ? (
+                      <div className="bg-red-50 text-red-700 text-center py-2 rounded-lg text-sm font-semibold">
+                        Event Full
+                      </div>
+                    ) : event.availableSpots <= 3 ? (
+                      <div className="bg-orange-50 text-orange-700 text-center py-2 rounded-lg text-sm font-semibold">
+                        Almost Full!
+                      </div>
+                    ) : (
+                      <div className="bg-green-50 text-green-700 text-center py-2 rounded-lg text-sm font-semibold">
+                        Join Now →
+                      </div>
+                    )}
                   </div>
-                ) : event.availableSpots <= 3 ? (
-                  <div className="bg-orange-50 text-orange-700 text-center py-2 rounded-lg text-sm font-semibold">
-                    Almost Full!
-                  </div>
-                ) : (
-                  <div className="bg-green-50 text-green-700 text-center py-2 rounded-lg text-sm font-semibold">
-                    Join Now
-                  </div>
-                )}
+                </div>
               </div>
             </Link>
           ))}

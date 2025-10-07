@@ -21,6 +21,7 @@ interface Event {
   name: string
   date: string
   endTime: string
+  city: string
   location: string
   totalCost: number
   minPlayers: number
@@ -217,6 +218,11 @@ export default function EventPage() {
               <div className="flex items-center">
                 <span className="text-lg">⏰</span>
                 <span className="ml-2">{formatTimeRange(event.date, event.endTime)}</span>
+              </div>
+
+              <div className="flex items-center">
+                <span className="text-lg">🏙️</span>
+                <span className="ml-2">{event.city}</span>
               </div>
 
               <div className="flex items-center">

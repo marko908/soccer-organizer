@@ -50,6 +50,7 @@ export async function GET(
       name: event.name,
       date: event.date,
       endTime: event.end_time,
+      city: event.city,
       location: event.location,
       totalCost: parseFloat(event.total_cost),
       minPlayers: event.min_players,

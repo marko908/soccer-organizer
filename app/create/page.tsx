@@ -19,6 +19,7 @@ export default function CreateEvent() {
     date: '',
     startTime: '',
     endTime: '',
+    city: '',
     location: '',
     totalCost: '',
     minPlayers: '10',
@@ -227,20 +228,40 @@ export default function CreateEvent() {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              required
-              className="input"
-              placeholder="e.g., Orlik Mokotów, ul. Sportowa 1"
-              value={formData.location}
-              onChange={handleChange}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                City
+              </label>
+              <input
+                type="text"
+                id="city"
+                name="city"
+                required
+                className="input"
+                placeholder="e.g., Warsaw"
+                value={formData.city}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">City for filtering events</p>
+            </div>
+
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                Venue Address
+              </label>
+              <input
+                type="text"
+                id="location"
+                name="location"
+                required
+                className="input"
+                placeholder="e.g., Orlik Mokotów, ul. Sportowa 1"
+                value={formData.location}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-gray-500 mt-1">Full address of the venue</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

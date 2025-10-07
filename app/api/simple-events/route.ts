@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
           name: event.name,
           date: event.date,
           endTime: event.end_time,
+          city: event.city,
           location: event.location,
           totalCost: parseFloat(event.total_cost),
           minPlayers: event.min_players,
@@ -90,10 +91,10 @@ export async function POST(request: NextRequest) {
     const organizerId = session.user.id
 
     const body = await request.json()
-    const { name, date, endTime, location, totalCost, minPlayers, maxPlayers, playersPerTeam, fieldType, cleatsAllowed } = body
+    const { name, date, endTime, city, location, totalCost, minPlayers, maxPlayers, playersPerTeam, fieldType, cleatsAllowed } = body
 
     // Validate input
-    if (!name || !date || !endTime || !location || !totalCost || !minPlayers || !maxPlayers || !playersPerTeam || !fieldType) {
+    if (!name || !date || !endTime || !city || !location || !totalCost || !minPlayers || !maxPlayers || !playersPerTeam || !fieldType) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
         name,
         date,
         end_time: endTime,
+        city,
         location,
         total_cost: totalCost,
         min_players: minPlayers,
@@ -135,6 +137,7 @@ export async function POST(request: NextRequest) {
       name: event.name,
       date: event.date,
       endTime: event.end_time,
+      city: event.city,
       location: event.location,
       totalCost: parseFloat(event.total_cost),
       minPlayers: event.min_players,

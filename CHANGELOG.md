@@ -11,6 +11,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-07] - Events List Redesign & City Field
+
+### Changed
+- **Events List Layout** 📋
+  - Changed from grid (3 columns) to vertical list layout
+  - Wider cards with left/right split: event details on left, stats on right
+  - Better visibility of all event information at a glance
+  - Responsive design: stacks vertically on mobile
+  - Files: `app/events/page.tsx:81-179`
+
+### Added
+- **City Field for Events** 🏙️
+  - New "City" input field on event creation form
+  - Separated from venue address for better filtering capabilities
+  - Database: New `city` column in `events` table with index for fast filtering
+  - City displayed on all event pages with 🏙️ emoji
+  - Foundation for future city-based event filtering
+  - Files: `app/create/page.tsx:22, 231-247`, `supabase-add-city-field.sql`
+
+- **Improved Location Fields** 📍
+  - City: For filtering events by location (e.g., "Warsaw")
+  - Venue Address: Full address of the venue (e.g., "Orlik Mokotów, ul. Sportowa 1")
+  - Both fields now have helper text explaining their purpose
+  - Files: `app/create/page.tsx:231-265`
+
+### Database
+- **New Column in `events` table:**
+  - `city` TEXT NOT NULL - City name for filtering
+  - Index: `events_city_idx` for fast city-based queries
+  - Migration: `supabase-add-city-field.sql`
+
+### API Updates
+- **All event API endpoints updated to include city:**
+  - `POST /api/simple-events` - Accepts city field (required)
+  - `GET /api/simple-events` - Returns city field
+  - `GET /api/simple-event/[id]` - Returns city field
+  - `GET /api/public-events` - Returns city field
+  - Files: `app/api/simple-events/route.ts`, `app/api/simple-event/[id]/route.ts`, `app/api/public-events/route.ts`
+
+### Migration Required
+**Before creating new events, run the SQL migration:**
+1. Open Supabase Dashboard → SQL Editor
+2. Copy SQL from `supabase-add-city-field.sql`
+3. Run the query to add the city column
+4. Existing events will be set to "Warsaw" by default (you can change this in the SQL)
+
+---
+
 ## [2025-10-06] - Privacy & UX Improvements for Event Pages
 
 ### Changed
