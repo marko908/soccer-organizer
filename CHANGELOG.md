@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-08] - Fix TypeScript Build Error
+
+### Fixed
+- **User Profile Page TypeScript Error** 🔧
+  - Issue: Build failing with "Property 'city' is missing in type" error
+  - Location: `app/u/[username]/page.tsx:108`
+  - Solution: Added explicit `any` type to event parameter in map function
+  - Impact: Resolves type mismatch between Supabase response and Event interface
+  - Files: `app/u/[username]/page.tsx:109`
+
+---
+
 ## [2025-10-07] - Major Feature Update: Profiles, Filters, Chat & Sharing
 
 ### Added
