@@ -73,7 +73,12 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
       if (error) {
         console.error('Error fetching messages:', error)
       } else {
-        setMessages(data || [])
+        // Transform data to match ChatMessage interface (user is returned as array, extract first element)
+        const transformedData = (data || []).map((msg: any) => ({
+          ...msg,
+          user: Array.isArray(msg.user) ? msg.user[0] : msg.user
+        }))
+        setMessages(transformedData)
       }
     } catch (error) {
       console.error('Error fetching messages:', error)
@@ -122,12 +127,17 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
 
           if (!error && data) {
             console.log('✅ Adding message to state:', data)
+            // Transform data to match ChatMessage interface
+            const transformedMessage: any = {
+              ...data,
+              user: Array.isArray(data.user) ? data.user[0] : data.user
+            }
             setMessages((prev) => {
               // Prevent duplicates
-              if (prev.some(msg => msg.id === data.id)) {
+              if (prev.some(msg => msg.id === transformedMessage.id)) {
                 return prev
               }
-              return [...prev, data]
+              return [...prev, transformedMessage]
             })
           } else {
             console.error('❌ Error fetching message:', error)
