@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2025-10-08] - Fix TypeScript Build Error
+## [2025-10-08] - Fix TypeScript Build Errors
 
 ### Fixed
 - **User Profile Page TypeScript Error** 🔧
@@ -20,6 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Solution: Added explicit `any` type to event parameter in map function
   - Impact: Resolves type mismatch between Supabase response and Event interface
   - Files: `app/u/[username]/page.tsx:109`
+
+- **EventChat Component TypeScript Error** 💬
+  - Issue: Build failing with "Type '{ user: {...}[] }' is not assignable to type 'ChatMessage'"
+  - Location: `components/EventChat.tsx:76`
+  - Root cause: Supabase foreign key relations return arrays, but interface expects single object
+  - Solution: Transform data to extract first element from user array
+  - Applied fix to both initial fetch and real-time subscription handler
+  - Files: `components/EventChat.tsx:77-81, 131-134`
 
 ---
 
