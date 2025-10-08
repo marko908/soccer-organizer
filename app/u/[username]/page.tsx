@@ -106,7 +106,7 @@ export default function PublicProfilePage() {
           .limit(10)
 
         if (!eventsError && eventsData) {
-          setEvents(eventsData.map(event => ({
+          setEvents(eventsData.map((event: any) => ({
             id: event.id,
             title: event.title,
             date: event.date,
