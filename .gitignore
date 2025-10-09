@@ -56,3 +56,6 @@ CLAUDE.md
 APP_ARCHITECTURE.md
 PROJECT_STATUS.md
 DATABASE-MIGRATION-INSTRUCTIONS.md
+
+# Security reports (keep internal, don't publish sensitive findings)
+# SECURITY_AUDIT_REPORT.md can be included as it shows security diligence

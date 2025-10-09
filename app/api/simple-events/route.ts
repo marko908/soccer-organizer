@@ -84,6 +84,20 @@ export async function POST(request: NextRequest) {
 
     const organizerId = session.user.id
 
+    // SECURITY: Check if user has permission to create events
+    const { data: userProfile } = await supabase
+      .from('users')
+      .select('can_create_events')
+      .eq('id', organizerId)
+      .single()
+
+    if (!userProfile || !userProfile.can_create_events) {
+      return NextResponse.json(
+        { error: 'You do not have permission to create events. Please contact an admin.' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
     const { name, date, endTime, city, location, totalCost, minPlayers, maxPlayers, playersPerTeam, fieldType, cleatsAllowed } = body
 
@@ -95,18 +109,80 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // SECURITY: Validate numeric inputs to prevent malicious data
+    if (totalCost < 0 || totalCost > 10000) {
+      return NextResponse.json(
+        { error: 'Invalid total cost' },
+        { status: 400 }
+      )
+    }
+
+    if (minPlayers < 2 || maxPlayers > 50 || minPlayers >= maxPlayers) {
+      return NextResponse.json(
+        { error: 'Invalid player limits' },
+        { status: 400 }
+      )
+    }
+
+    if (playersPerTeam < 2 || playersPerTeam > 11) {
+      return NextResponse.json(
+        { error: 'Invalid players per team' },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY: Validate field type
+    const validFieldTypes = ['futsal', 'artificial_grass', 'natural_grass']
+    if (!validFieldTypes.includes(fieldType)) {
+      return NextResponse.json(
+        { error: 'Invalid field type' },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY: Validate dates
+    const eventDate = new Date(date)
+    const eventEndTime = new Date(endTime)
+    const now = new Date()
+
+    if (eventDate < now) {
+      return NextResponse.json(
+        { error: 'Event date must be in the future' },
+        { status: 400 }
+      )
+    }
+
+    if (eventEndTime <= eventDate) {
+      return NextResponse.json(
+        { error: 'End time must be after start time' },
+        { status: 400 }
+      )
+    }
+
+    // SECURITY: Sanitize string inputs (trim and limit length)
+    const sanitizedName = name.trim().substring(0, 200)
+    const sanitizedCity = city.trim().substring(0, 100)
+    const sanitizedLocation = location.trim().substring(0, 500)
+
+    if (sanitizedName.length < 3) {
+      return NextResponse.json(
+        { error: 'Event name must be at least 3 characters' },
+        { status: 400 }
+      )
+    }
+
     // Calculate price per player
     const pricePerPlayer = totalCost / maxPlayers
 
-    // Insert event using Supabase client
+    // Insert event using Supabase client with sanitized data
     const { data: event, error: insertError } = await supabase
       .from('events')
       .insert({
-        name,
+        name: sanitizedName,
         date,
         end_time: endTime,
-        city,
-        location,
+        city: sanitizedCity,
+        location: sanitizedLocation,
         total_cost: totalCost,
         min_players: minPlayers,
         max_players: maxPlayers,

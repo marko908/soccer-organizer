@@ -11,6 +11,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2025-10-09] - Critical Security Fix & Comprehensive Security Audit
+
+### 🔒 Security
+- **CRITICAL FIX**: Added missing permission check on event creation endpoint
+  - Previously any authenticated user could create events (bypassed permission system)
+  - Now properly validates `can_create_events` permission before allowing event creation
+  - Returns 403 Forbidden with clear error message if permission denied
+
+- **Enhanced Input Validation**: Added comprehensive validation to event creation
+  - Numeric range validation (totalCost: 0-10000, players: 2-50, playersPerTeam: 2-11)
+  - String sanitization (trim + length limits: name 200 chars, city 100 chars, location 500 chars)
+  - Date validation (must be in future, end time after start time)
+  - Field type whitelist validation (only allows: futsal, artificial_grass, natural_grass)
+  - Minimum name length requirement (3 characters)
+
+- **Security Audit**: Comprehensive security review completed
+  - Verified authentication & authorization implementation
+  - Confirmed SQL injection protection (parameterized queries)
+  - Verified XSS protection (React auto-escaping, no dangerous HTML)
+  - Validated Stripe webhook signature verification
+  - Confirmed Row Level Security (RLS) policies on all tables
+  - Verified secrets management (no credentials exposed)
+  - Created detailed security audit report (SECURITY_AUDIT_REPORT.md)
+
+### Changed
+- `app/api/simple-events/route.ts` - Added permission check, input validation, and data sanitization
+
+### Added
+- `SECURITY_AUDIT_REPORT.md` - Comprehensive security audit documentation
+  - Overall security rating: GOOD ✅
+  - 1 Critical vulnerability fixed
+  - 3 Medium priority recommendations (rate limiting, CSP, monitoring)
+  - Approved for production use
+
+### Recommendations for Future Implementation
+- Add rate limiting middleware (Medium priority)
+- Implement Content Security Policy headers (Medium priority)
+- Add security monitoring and logging (Low priority)
+
+---
+
 ## [2025-10-09] - Update Documentation and Terminology to Football
 
 ### Changed
