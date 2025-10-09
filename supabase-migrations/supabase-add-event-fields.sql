@@ -1,4 +1,4 @@
--- Migration: Add soccer-specific fields to events table
+-- Migration: Add football-specific fields to events table
 -- Date: 2025-10-05
 -- Description: Add end_time, players_per_team, field_type, cleats_allowed, min_players
 
@@ -23,9 +23,9 @@ ALTER TABLE events
   ADD CONSTRAINT check_max_players CHECK (max_players >= 2 AND max_players <= 50);
 
 -- Add comments for documentation
-COMMENT ON COLUMN events.end_time IS 'End time of the soccer game';
+COMMENT ON COLUMN events.end_time IS 'End time of the football game';
 COMMENT ON COLUMN events.players_per_team IS 'Number of players per team (e.g., 6 for 6v6, 7 for 7v7, 11 for 11v11)';
-COMMENT ON COLUMN events.field_type IS 'Type of soccer field: futsal, artificial_grass, or natural_grass';
+COMMENT ON COLUMN events.field_type IS 'Type of football field: futsal, artificial_grass, or natural_grass';
 COMMENT ON COLUMN events.cleats_allowed IS 'Whether cleats/studs are allowed on this field';
 COMMENT ON COLUMN events.min_players IS 'Minimum number of players required to start the game';
 

@@ -75,7 +75,7 @@ export default function EventPage() {
   }
 
   const handleWhatsAppShare = () => {
-    const text = encodeURIComponent(`⚽ Join me for soccer!\n\n${event?.name}\n📅 ${formatDateTimeShort(event?.date || '')}\n📍 ${event?.location}\n💰 ${formatCurrency(event?.pricePerPlayer || 0)}\n\n${window.location.href}`)
+    const text = encodeURIComponent(`⚽ Join me for football!\n\n${event?.name}\n📅 ${formatDateTimeShort(event?.date || '')}\n📍 ${event?.location}\n💰 ${formatCurrency(event?.pricePerPlayer || 0)}\n\n${window.location.href}`)
     window.open(`https://wa.me/?text=${text}`, '_blank')
   }
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Soccer Organizer project will be documented in this file.
+All notable changes to the Foothub project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,6 +8,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+
+---
+
+## [2025-10-09] - Update Documentation and Terminology to Football
+
+### Changed
+- **Terminology Update**: Replaced "soccer" with "football" throughout the codebase
+  - Updated all user-facing text in components (profile, events, event details)
+  - Updated API payment descriptions
+  - Updated SQL migration comments
+  - Maintained consistency with international terminology
+
+### Improved
+- **README.md**: Comprehensive update with accurate feature descriptions
+  - Detailed feature breakdown by category (Core, User, Social, Admin, Technical)
+  - Added all current features: field types, team sizes, event chat, feedback system
+  - Updated database schema documentation with new fields
+  - Enhanced "Project Highlights" section with complete technology stack
+  - Removed outdated information, added missing features
+
+- **package.json**: Updated version to 1.0.0 and added proper description
+
+### Documentation Files Updated
+- `README.md` - Complete rewrite with accurate current features
+- `app/profile/page.tsx` - "Football Profile" section
+- `app/events/page.tsx` - Event listing description
+- `app/event/[id]/page.tsx` - WhatsApp share message
+- `app/api/simple-checkout/route.ts` - Stripe payment description
+- `supabase-migrations/supabase-add-event-fields.sql` - SQL comments
+- `supabase-migrations/supabase-add-chat-profiles-notifications.sql` - Header comment
+- `scripts/README.md` - Test profile links
 
 ---
 
@@ -131,7 +162,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - On-time rate tracking (defaults to 100%)
   - Preferred cities multi-select for notifications
   - Visual stats cards with color-coded badges
-  - Reorganized profile sections: Soccer Profile + Physical Stats
+  - Reorganized profile sections: Football Profile + Physical Stats
   - Files: `app/profile/page.tsx`, `app/api/profile/route.ts`, `contexts/AuthContext.tsx`
 
 - **Event Filters & Search** 🔍
@@ -397,7 +428,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2025-10-05] - Soccer-Specific Event Fields & Enhanced Event Creation
+## [2025-10-05] - Football-Specific Event Fields & Enhanced Event Creation
 
 ### Added
 - **Time Range for Events** ⏰
@@ -434,7 +465,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Event Creation Form** 📝
-  - Reorganized layout with new soccer-specific fields
+  - Reorganized layout with new football-specific fields
   - Start Date & Time + End Time (replaces single Date & Time)
   - Players per team, Field type, Cleats toggle in one row
   - Total Cost + Min Players in one row
@@ -1428,7 +1459,7 @@ To apply these changes to your database:
 ## [2025-10-01] - Rebrand to Foothub
 
 ### Changed
-- **Application Name:** Renamed from "Soccer Organizer" to "Foothub"
+- **Application Name:** Project name is "Foothub" (Football event organization platform)
   - Updated `package.json` name field
   - Updated README.md title
   - Updated DEPLOYMENT.md references

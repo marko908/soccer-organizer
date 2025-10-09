@@ -1,7 +1,8 @@
 {
   "name": "foothub",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "A modern football event management platform with payment processing and real-time features",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

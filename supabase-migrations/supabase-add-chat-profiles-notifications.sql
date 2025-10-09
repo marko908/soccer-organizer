@@ -1,4 +1,4 @@
--- Soccer Organizer: Chat, Enhanced Profiles, and Notifications
+-- Foothub: Chat, Enhanced Profiles, and Notifications
 -- This migration adds chat functionality, enhanced user profiles, and notification preferences
 
 -- ============================================================================

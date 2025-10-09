@@ -152,7 +152,7 @@ export default function PublicEventsPage() {
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Upcoming Events</h1>
-        <p className="text-gray-600">Find and join soccer games in your area</p>
+        <p className="text-gray-600">Find and join football games in your area</p>
       </div>
 
       {/* Filters Section */}

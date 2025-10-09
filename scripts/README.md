@@ -51,7 +51,7 @@ Email: john.smith@example.com
 Password: Password123!
 ```
 
-Or visit public profiles:
+Or visit public profiles (live demo):
 - https://soccer-organizer.vercel.app/u/johnny_goals
 - https://soccer-organizer.vercel.app/u/admin_mike
 - https://soccer-organizer.vercel.app/u/emma_j

@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'pln',
             product_data: {
-              name: `${event.name} - Soccer Game`,
+              name: `${event.name} - Football Game`,
               description: `${event.location} on ${new Date(event.date).toLocaleDateString()}`,
             },
             unit_amount: Math.round(parseFloat(event.price_per_player) * 100), // Convert to cents

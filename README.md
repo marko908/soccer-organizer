@@ -1,24 +1,54 @@
 # Foothub ⚽
 
-> A modern, full-stack soccer event management platform with integrated payment processing and real-time features.
+> A modern, full-stack football event management platform with integrated payment processing and real-time features.
 
 **Live Demo:** [https://soccer-organizer.vercel.app](https://soccer-organizer.vercel.app)
 
 ## 📋 Overview
 
-Foothub is a pay-to-play soccer game organization web application that simplifies the process of creating, managing, and joining soccer events. Built with modern web technologies, it handles everything from user authentication to payment processing, making it easy for organizers to collect payments and for players to secure their spots.
+Foothub is a comprehensive football event organization platform that simplifies the process of creating, managing, and joining football games. Built with modern web technologies, it handles everything from user authentication to payment processing, real-time chat, and social features, making it easy for organizers to collect payments and for players to secure their spots.
 
 ## ✨ Key Features
 
-- **🔐 User Authentication**: Secure authentication with Supabase Auth (SSR)
-- **👤 User Profiles**: Complete profile system with avatars, bio, and stats
+### Core Functionality
+- **⚽ Event Management**: Create and manage football events with detailed configuration
+  - Customizable field types (Futsal, Artificial Grass, Natural Grass)
+  - Flexible team sizes (2v2 to 11v11)
+  - Date/time scheduling with event duration tracking
+  - City and location information
+  - Cleats allowed/not allowed settings
+  - Player limits (min/max capacity)
+
+- **💳 Payment Processing**: Integrated Stripe checkout with Polish BLIK support
+  - Automatic price calculation per player
+  - Real-time payment status tracking
+  - Progress bars showing collection status
+  - Stripe Connect integration for organizers
+
+### User Features
+- **🔐 Authentication**: Secure server-side authentication with Supabase Auth (SSR)
+- **👤 User Profiles**: Complete profile system with:
+  - Avatar uploads
+  - Bio and personal information
+  - Physical stats (age, weight, height)
+  - Unique username system
 - **🌐 Public Profiles**: Shareable profiles at `/u/[username]`
-- **⚽ Event Management**: Create and manage soccer events with customizable details
-- **💳 Payment Processing**: Integrated Stripe checkout with BLIK support for Polish users
-- **⚡ Real-time Updates**: Live participant lists and event chat powered by Supabase Realtime
+
+### Social & Communication
+- **💬 Real-time Event Chat**: Live chat for participants and organizers powered by Supabase Realtime
+- **📤 Social Sharing**: Share events via WhatsApp, Facebook Messenger, or direct link
+- **⭐ Feedback System**: Post-event ratings for organizers
+
+### Admin & Management
 - **🔒 Permission System**: Admin-controlled event creation permissions
-- **🎨 Modern UI**: Responsive design with Tailwind CSS
+- **📊 Dashboard**: Track all your events, participants, and payment progress
+- **⚙️ Event Management**: Edit participant lists, manage registrations
+
+### Technical Features
+- **⚡ Real-time Updates**: Live participant lists and chat using WebSocket
+- **🎨 Modern UI**: Fully responsive design with Tailwind CSS
 - **🌍 Multi-language**: Support for Polish and English
+- **🔔 Smart Notifications**: Auto-filled user data for registered users
 
 ## 🛠️ Tech Stack
 
@@ -124,22 +154,31 @@ The application will be available at [http://localhost:3000](http://localhost:30
 1. Get `can_create_events` permission from admin
 2. Visit `/create`
 3. Fill in event details:
-   - Name (e.g., "Friday Soccer at Orlik")
-   - Date & Time
-   - Location
+   - Name (e.g., "Friday Football at Orlik")
+   - Date, Start Time & End Time
+   - City & Location
    - Total Cost (e.g., 200 PLN)
-   - Max Players (e.g., 14)
+   - Min/Max Players (e.g., 10-14 players)
+   - Players per Team (e.g., 7 for 7v7)
+   - Field Type (Futsal, Artificial Grass, Natural Grass)
+   - Cleats Allowed (Yes/No)
 4. Price per player is automatically calculated
-5. Share the generated event URL with players
+5. Share the generated event URL with players via WhatsApp, Messenger, or direct link
 
 ### Joining an Event
 
 1. Visit the event URL `/event/[id]`
-2. View event details and current participants
-3. Click "Pay & Sign Up"
-4. Enter your details (auto-filled if logged in)
-5. Complete payment via Stripe (supports BLIK)
-6. Your spot is secured upon successful payment
+2. View event details including:
+   - Date, time, and location
+   - Field type and team configuration
+   - Current participants list
+   - Payment progress
+3. Login or create an account (required)
+4. Click "Pay & Sign Up"
+5. Review auto-filled details from your profile
+6. Complete payment via Stripe (supports BLIK and card payments)
+7. Your spot is secured upon successful payment
+8. Join the event chat to coordinate with other players
 
 ### Public Profiles
 
@@ -205,11 +244,17 @@ View any user's profile at `/u/[username]`:
 ### Events
 - `id`: Auto-increment primary key
 - `name`: Event name
-- `date`: Date and time
-- `location`: Event location
+- `date`: Event start date and time
+- `end_time`: Event end time
+- `city`: City where event takes place
+- `location`: Specific venue/address
 - `total_cost`: Total cost for the pitch (DECIMAL)
+- `min_players`: Minimum players required (INTEGER)
 - `max_players`: Maximum number of players (INTEGER)
 - `price_per_player`: Cost per participant (DECIMAL)
+- `players_per_team`: Team size configuration (INTEGER, 2-11)
+- `field_type`: Type of field (TEXT: 'futsal', 'artificial_grass', 'natural_grass')
+- `cleats_allowed`: Whether cleats are permitted (BOOLEAN)
 - `organizer_id`: UUID (Foreign key to Users)
 - `created_at`, `updated_at`: Timestamps
 
@@ -286,14 +331,17 @@ See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed setup instructions i
 
 ## 🎯 Project Highlights
 
-This project demonstrates:
-- **Full-stack development** with Next.js 14 and TypeScript
-- **Payment integration** with Stripe API and webhook handling
-- **Real-time features** using WebSocket connections
-- **Database design** with PostgreSQL and RLS policies
-- **Authentication** with secure SSR implementation
-- **Modern React** patterns (Server Components, Context API)
+This project demonstrates expertise in:
+- **Full-stack development** with Next.js 14 App Router and TypeScript
+- **Payment integration** with Stripe API, webhooks, and Stripe Connect
+- **Real-time features** using Supabase Realtime (WebSocket) for chat and live updates
+- **Database design** with PostgreSQL, Row Level Security (RLS), and complex queries
+- **Authentication & Authorization** with secure SSR implementation and role-based permissions
+- **Modern React** patterns (Server Components, Client Components, Context API)
+- **Social integration** (WhatsApp, Messenger sharing)
 - **Production deployment** on Vercel with CI/CD
+- **State management** with React hooks and optimistic updates
+- **Responsive UI/UX** with Tailwind CSS and modern design patterns
 
 ## 📝 License
 
