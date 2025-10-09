@@ -1,27 +1,44 @@
-# Foothub
+# Foothub ⚽
 
-A pay-to-play soccer game organization web application built with Next.js, Supabase, and Stripe.
+> A modern, full-stack soccer event management platform with integrated payment processing and real-time features.
 
-## Features
+**Live Demo:** [https://soccer-organizer.vercel.app](https://soccer-organizer.vercel.app)
 
-- **User Profiles**: Complete profile system with avatars, bio, and stats
-- **Public Profiles**: Share your profile at `/u/[username]`
-- **Event Creation**: Create soccer events with date, location, and pricing
-- **Payment Integration**: Stripe checkout with BLIK support
-- **Real-time Updates**: Live participant list and payment progress
-- **Permission System**: Admin-controlled event creation permissions
-- **Responsive Design**: Modern UI with Tailwind CSS
-- **Multi-language**: Polish and English support
+## 📋 Overview
 
-## Tech Stack
+Foothub is a pay-to-play soccer game organization web application that simplifies the process of creating, managing, and joining soccer events. Built with modern web technologies, it handles everything from user authentication to payment processing, making it easy for organizers to collect payments and for players to secure their spots.
 
-- **Frontend**: Next.js 14, React, TypeScript
+## ✨ Key Features
+
+- **🔐 User Authentication**: Secure authentication with Supabase Auth (SSR)
+- **👤 User Profiles**: Complete profile system with avatars, bio, and stats
+- **🌐 Public Profiles**: Shareable profiles at `/u/[username]`
+- **⚽ Event Management**: Create and manage soccer events with customizable details
+- **💳 Payment Processing**: Integrated Stripe checkout with BLIK support for Polish users
+- **⚡ Real-time Updates**: Live participant lists and event chat powered by Supabase Realtime
+- **🔒 Permission System**: Admin-controlled event creation permissions
+- **🎨 Modern UI**: Responsive design with Tailwind CSS
+- **🌍 Multi-language**: Support for Polish and English
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router, React Server Components)
+- **Language**: TypeScript
 - **Styling**: Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth (SSR with cookie-based sessions)
-- **Payments**: Stripe with BLIK support
-- **Security**: Row Level Security (RLS) policies
+- **State Management**: React Context API
+
+### Backend
+- **API**: Next.js API Routes
+- **Database**: PostgreSQL (Supabase)
+- **Authentication**: Supabase Auth with SSR (cookie-based sessions)
+- **Real-time**: Supabase Realtime (WebSocket)
+- **Payment Processing**: Stripe API with webhook integration
+
+### Security & DevOps
+- **Database Security**: Row Level Security (RLS) policies
+- **Deployment**: Vercel (CI/CD)
+- **Environment Management**: Environment variables with validation
 
 ## Setup Instructions
 
@@ -244,35 +261,44 @@ stripe listen --forward-to localhost:3000/api/webhook
 
 This will give you a webhook secret starting with `whsec_` to use in your `.env.local`.
 
-## Production Deployment
+## 🚀 Production Deployment
 
-### Vercel (Recommended)
+This application is deployed on Vercel with automatic CI/CD from the main branch.
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed setup instructions including:
+- Environment variable configuration
+- Database setup and migrations
+- Stripe webhook configuration
+- Production security checklist
 
-**Quick steps:**
-1. Push your code to GitHub
-2. Connect repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Configure production Stripe webhook endpoint
-5. Deploy!
+### 🔒 Security Features
+- ✅ Row Level Security (RLS) policies on all database tables
+- ✅ Secure server-side authentication with SSR
+- ✅ Protected API routes with authentication middleware
+- ✅ Stripe webhook signature verification
+- ✅ Environment variables never exposed to client
+- ✅ Email verification for user registration
+- ✅ Admin-controlled permissions system
 
-### Security Checklist
-- ✅ Row Level Security (RLS) enabled on all tables
-- ✅ Service role key added to environment variables (never exposed to client)
-- ✅ Supabase Auth manages passwords and sessions
-- ✅ Email verification required for users
-- ✅ Public profile access with proper RLS policies
-- ✅ Admin-controlled event creation permissions
+## 📸 Screenshots
 
-## Admin Panel
+*(Consider adding screenshots of key features here for your portfolio)*
 
-Access at `/admin` (requires ADMIN role):
-- View all users and their permissions
-- Grant/revoke `can_create_events` permission
-- Search users by name, nickname, or email
-- View system statistics
+## 🎯 Project Highlights
 
-## License
+This project demonstrates:
+- **Full-stack development** with Next.js 14 and TypeScript
+- **Payment integration** with Stripe API and webhook handling
+- **Real-time features** using WebSocket connections
+- **Database design** with PostgreSQL and RLS policies
+- **Authentication** with secure SSR implementation
+- **Modern React** patterns (Server Components, Context API)
+- **Production deployment** on Vercel with CI/CD
+
+## 📝 License
 
 MIT
+
+## 👨‍💻 Author
+
+Built as a portfolio project to demonstrate modern full-stack web development skills.
