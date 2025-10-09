@@ -69,7 +69,7 @@ export default function ProfilePage() {
         setProfileData(data.profile)
       }
     } catch (error) {
-      console.error('Error fetching profile:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -117,25 +117,16 @@ export default function ProfilePage() {
 
   const handlePasswordReset = async () => {
     try {
-      console.log('🔐 Sending password reset email to:', profileData.email)
-      console.log('🔐 Redirect URL:', `${window.location.origin}/auth/reset-password`)
-
       const { data, error } = await supabase.auth.resetPasswordForEmail(profileData.email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
 
-      console.log('🔐 Reset password response - data:', data)
-      console.log('🔐 Reset password response - error:', error)
-
       if (error) {
-        console.error('❌ Password reset error:', error)
         setMessage({ type: 'error', text: `Failed to send password reset email: ${error.message}` })
       } else {
-        console.log('✅ Password reset email sent successfully')
         setMessage({ type: 'success', text: 'Password reset email sent! Check your inbox.' })
       }
     } catch (error: any) {
-      console.error('❌ Password reset exception:', error)
       setMessage({ type: 'error', text: 'Failed to send password reset email' })
     }
   }

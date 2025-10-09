@@ -56,7 +56,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: accountLink.url })
   } catch (error: any) {
-    console.error('Connect onboarding error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to create onboarding link' },
       { status: 500 }

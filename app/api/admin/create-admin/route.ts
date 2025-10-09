@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (authError) {
-      console.error('Supabase Auth error:', authError)
       throw authError
     }
 
@@ -69,7 +68,6 @@ export async function POST(request: NextRequest) {
       })
 
     if (profileError) {
-      console.error('Profile creation error:', profileError)
       // Try to clean up the auth user
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
       throw profileError
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('Admin creation error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to create admin user' },
       { status: 500 }

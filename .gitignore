@@ -45,3 +45,14 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Stripe CLI binaries
+stripe.exe
+stripe_cli.zip
+stripe
+
+# Documentation (internal)
+CLAUDE.md
+APP_ARCHITECTURE.md
+PROJECT_STATUS.md
+DATABASE-MIGRATION-INSTRUCTIONS.md

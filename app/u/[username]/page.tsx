@@ -55,8 +55,6 @@ export default function PublicProfilePage() {
 
   const fetchProfile = async () => {
     try {
-      console.log('🔍 Fetching profile for username:', username)
-
       // Fetch user profile by nickname
       const { data: profileData, error: profileError } = await supabase
         .from('users')
@@ -65,12 +63,9 @@ export default function PublicProfilePage() {
         .single()
 
       if (profileError || !profileData) {
-        console.error('❌ Profile not found:', profileError)
         setLoading(false)
         return
       }
-
-      console.log('✅ Profile found:', profileData.nickname)
 
       setProfile({
         id: profileData.id,
@@ -119,7 +114,7 @@ export default function PublicProfilePage() {
         }
       }
     } catch (error) {
-      console.error('❌ Error fetching profile:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }

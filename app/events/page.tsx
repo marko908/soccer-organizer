@@ -78,11 +78,9 @@ export default function PublicEventsPage() {
       if (response.ok) {
         const data = await response.json()
         setEvents(data.events)
-      } else {
-        console.error('Failed to fetch events')
       }
     } catch (error) {
-      console.error('Error fetching events:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }

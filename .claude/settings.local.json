@@ -27,7 +27,8 @@
       "Bash(./stripe.exe --version)",
       "Bash(./stripe.exe listen:*)",
       "Bash(netstat:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []

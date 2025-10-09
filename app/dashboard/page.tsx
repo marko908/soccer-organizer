@@ -57,7 +57,7 @@ export default function Dashboard() {
         setEvents(data.events || [])
       }
     } catch (error) {
-      console.error('Error fetching events:', error)
+      // Silent fail
     } finally {
       setEventsLoading(false)
     }
@@ -71,7 +71,7 @@ export default function Dashboard() {
         setConnectStatus(data)
       }
     } catch (error) {
-      console.error('Error checking connect status:', error)
+      // Silent fail
     }
   }
 

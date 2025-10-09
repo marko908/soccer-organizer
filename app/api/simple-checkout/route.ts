@@ -4,13 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔵 Checkout API called')
     const body = await request.json()
-    console.log('📦 Request body:', { eventId: body.eventId, participantName: body.participantName })
     const { eventId, participantName, participantEmail, userId, avatarUrl } = body
 
     if (!eventId || !participantName) {
-      console.log('❌ Validation failed: missing eventId or participantName')
       return NextResponse.json(
         { error: 'Event ID and participant name are required' },
         { status: 400 }
@@ -31,7 +28,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (eventError || !event) {
-      console.error('❌ Event not found:', eventError)
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
@@ -98,13 +94,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    console.log(`✅ Checkout session created for event ${eventId}, organizer: ${organizer.stripe_account_id}`)
-
     return NextResponse.json({ url: session.url })
   } catch (error: any) {
-    console.error('❌ FATAL ERROR in checkout:', error)
-    console.error('❌ Error stack:', error.stack)
-    console.error('❌ Error message:', error.message)
     return NextResponse.json(
       { error: `Failed to create checkout session: ${error.message}` },
       { status: 500 }

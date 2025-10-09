@@ -17,7 +17,6 @@ export async function GET(
       .single()
 
     if (eventError || !event) {
-      console.error('Event not found:', eventId, eventError)
       return NextResponse.json(
         { error: 'Event not found' },
         { status: 404 }
@@ -30,10 +29,6 @@ export async function GET(
       .select('id, name, email, payment_status, created_at, avatar_url, user_id, stripe_payment_intent_id')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false })
-
-    if (participantsError) {
-      console.error('Error fetching participants:', participantsError)
-    }
 
     // Count paid participants
     const { count: paidCount } = await supabase
@@ -79,7 +74,6 @@ export async function GET(
 
     return NextResponse.json(formattedEvent)
   } catch (error: any) {
-    console.error('Get event error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ profile: formattedProfile })
   } catch (error: any) {
-    console.error('Get profile error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
@@ -147,7 +146,6 @@ export async function PATCH(request: NextRequest) {
       .single()
 
     if (updateError) {
-      console.error('Update error:', updateError)
       return NextResponse.json(
         { error: 'Failed to update profile' },
         { status: 500 }
@@ -181,7 +179,6 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ profile: formattedProfile })
   } catch (error: any) {
-    console.error('Update profile error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

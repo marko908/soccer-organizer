@@ -38,7 +38,7 @@ export default function ConnectPage() {
         setConnectStatus(data)
       }
     } catch (error) {
-      console.error('Error checking connect status:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -61,7 +61,6 @@ export default function ConnectPage() {
         setOnboarding(false)
       }
     } catch (error) {
-      console.error('Error starting onboarding:', error)
       alert('Failed to start onboarding')
       setOnboarding(false)
     }

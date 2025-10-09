@@ -70,9 +70,7 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
         .eq('is_deleted', false)
         .order('created_at', { ascending: true })
 
-      if (error) {
-        console.error('Error fetching messages:', error)
-      } else {
+      if (!error && data) {
         // Transform data to match ChatMessage interface (user is returned as array, extract first element)
         const transformedData = (data || []).map((msg: any) => ({
           ...msg,
@@ -81,15 +79,13 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
         setMessages(transformedData)
       }
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
   }
 
   const subscribeToMessages = () => {
-    console.log(`🔔 Setting up realtime subscription for event ${eventId}`)
-
     const channel = supabase
       .channel(`chat:${eventId}`, {
         config: {
@@ -105,8 +101,6 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
           filter: `event_id=eq.${eventId}`,
         },
         async (payload) => {
-          console.log('📨 New message received:', payload)
-
           // Fetch the new message with user data
           const { data, error } = await supabase
             .from('chat_messages')
@@ -126,7 +120,6 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
             .single()
 
           if (!error && data) {
-            console.log('✅ Adding message to state:', data)
             // Transform data to match ChatMessage interface
             const transformedMessage: any = {
               ...data,
@@ -139,17 +132,12 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
               }
               return [...prev, transformedMessage]
             })
-          } else {
-            console.error('❌ Error fetching message:', error)
           }
         }
       )
-      .subscribe((status) => {
-        console.log('🔌 Subscription status:', status)
-      })
+      .subscribe()
 
     return () => {
-      console.log('🔴 Cleaning up subscription')
       supabase.removeChannel(channel)
     }
   }
@@ -171,13 +159,11 @@ export default function EventChat({ eventId, isParticipant, isOrganizer }: Event
         })
 
       if (error) {
-        console.error('Error sending message:', error)
         alert('Failed to send message')
       } else {
         setNewMessage('')
       }
     } catch (error) {
-      console.error('Error sending message:', error)
       alert('Failed to send message')
     } finally {
       setSending(false)

@@ -57,7 +57,7 @@ export default function AdminPage() {
         setUsers(data.users || [])
       }
     } catch (error) {
-      console.error('Error fetching users:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -88,7 +88,6 @@ export default function AdminPage() {
         alert(data.error || 'Failed to update permission')
       }
     } catch (error) {
-      console.error('Error toggling permission:', error)
       alert('Failed to update permission')
     } finally {
       setActionLoading(null)

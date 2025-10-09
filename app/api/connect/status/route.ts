@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
       accountId: profile.stripe_account_id,
     })
   } catch (error: any) {
-    console.error('Connect status error:', error)
     return NextResponse.json(
       { error: error.message || 'Failed to fetch account status' },
       { status: 500 }

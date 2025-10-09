@@ -21,7 +21,6 @@ export async function GET() {
       .order('date', { ascending: true })
 
     if (eventsError) {
-      console.error('Error fetching public events:', eventsError)
       throw eventsError
     }
 
@@ -63,7 +62,6 @@ export async function GET() {
 
     return NextResponse.json({ events: eventsWithParticipants })
   } catch (error: any) {
-    console.error('Get public events error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

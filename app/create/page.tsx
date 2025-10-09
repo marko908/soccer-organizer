@@ -122,7 +122,6 @@ export default function CreateEvent() {
         alert(error.error || 'Failed to create event')
       }
     } catch (error) {
-      console.error('Error creating event:', error)
       alert('Failed to create event')
     } finally {
       setLoading(false)

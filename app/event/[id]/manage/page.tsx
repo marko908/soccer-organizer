@@ -64,11 +64,9 @@ export default function ManageEventPage() {
       if (response.ok) {
         const eventData = await response.json()
         setEvent(eventData)
-      } else {
-        console.error('Event not found')
       }
     } catch (error) {
-      console.error('Error fetching event:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -106,7 +104,6 @@ export default function ManageEventPage() {
         alert(error.error || 'Failed to add participant')
       }
     } catch (error) {
-      console.error('Error adding participant:', error)
       alert('Failed to add participant')
     } finally {
       setAddingParticipant(false)
@@ -131,7 +128,6 @@ export default function ManageEventPage() {
         alert(error.error || 'Failed to remove participant')
       }
     } catch (error) {
-      console.error('Error removing participant:', error)
       alert('Failed to remove participant')
     }
   }

@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (updateError) {
-      console.error('Error updating permission:', updateError)
       return NextResponse.json(
         { error: 'Failed to update permission' },
         { status: 500 }
@@ -74,7 +73,6 @@ export async function POST(request: NextRequest) {
       message: `Permission ${canCreateEvents ? 'granted' : 'revoked'} successfully`
     })
   } catch (error: any) {
-    console.error('Toggle permission error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     const { data: users, error: usersError } = await query
 
     if (usersError) {
-      console.error('Error fetching users:', usersError)
       return NextResponse.json(
         { error: 'Failed to fetch users' },
         { status: 500 }
@@ -69,7 +68,6 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users: formattedUsers })
   } catch (error: any) {
-    console.error('Admin users list error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

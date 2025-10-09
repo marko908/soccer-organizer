@@ -16,13 +16,10 @@ function ConfirmEmailContent() {
   useEffect(() => {
     const confirmEmail = async () => {
       try {
-        console.log('📧 All URL params:', Object.fromEntries(searchParams.entries()))
-
         // Check if user is already authenticated (Supabase auto-confirms on redirect)
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {
-          console.log('✅ Email already confirmed! Session exists:', session.user.email)
           setStatus('success')
           setTimeout(() => {
             router.push('/dashboard')
@@ -31,11 +28,9 @@ function ConfirmEmailContent() {
         }
 
         // If no session, show error (shouldn't happen with ConfirmationURL)
-        console.log('⚠️ No session found after confirmation redirect')
         setStatus('error')
         setErrorMessage('Please try logging in manually')
       } catch (error: any) {
-        console.error('❌ Confirmation error:', error)
         setStatus('error')
         setErrorMessage(error.message || 'An error occurred')
       }

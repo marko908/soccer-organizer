@@ -54,7 +54,6 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Participant removed successfully' })
   } catch (error: any) {
-    console.error('Remove participant error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

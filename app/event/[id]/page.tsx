@@ -70,7 +70,7 @@ export default function EventPage() {
       setLinkCopied(true)
       setTimeout(() => setLinkCopied(false), 2000)
     } catch (error) {
-      console.error('Failed to copy link:', error)
+      // Silent fail
     }
   }
 
@@ -97,11 +97,9 @@ export default function EventPage() {
       if (response.ok) {
         const eventData = await response.json()
         setEvent(eventData)
-      } else {
-        console.error('Event not found')
       }
     } catch (error) {
-      console.error('Error fetching event:', error)
+      // Silent fail
     } finally {
       setLoading(false)
     }
@@ -132,21 +130,13 @@ export default function EventPage() {
 
       if (response.ok) {
         const data = await response.json()
-
-        // Check if in test mode - if so, redirect immediately
-        if (data.testMode) {
-          console.log('🧪 Test mode: Redirecting to success page')
-          window.location.href = data.url
-        } else {
-          // Production mode: redirect to Stripe checkout
-          window.location.href = data.url
-        }
+        // Redirect to checkout or success page
+        window.location.href = data.url
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to create payment session')
       }
     } catch (error) {
-      console.error('Error creating payment session:', error)
       alert('Failed to create payment session')
     } finally {
       setPaymentLoading(false)

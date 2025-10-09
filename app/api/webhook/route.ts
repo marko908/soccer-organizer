@@ -25,7 +25,6 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    console.error('Webhook signature verification failed:', err)
     return NextResponse.json(
       { error: 'Webhook signature verification failed' },
       { status: 400 }
@@ -46,7 +45,6 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (existingParticipant) {
-        console.log(`⏭️ Participant already exists for payment intent ${session.payment_intent}, skipping`)
         return NextResponse.json({ received: true, skipped: true })
       }
 
@@ -63,10 +61,7 @@ export async function POST(request: NextRequest) {
         })
 
       if (error) throw error
-
-      console.log(`✅ Participant ${participantName} successfully added to event ${eventId}`)
     } catch (error) {
-      console.error('❌ Error creating participant:', error)
       return NextResponse.json(
         { error: 'Failed to create participant' },
         { status: 500 }

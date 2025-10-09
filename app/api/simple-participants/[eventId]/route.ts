@@ -60,7 +60,6 @@ export async function POST(
       .single()
 
     if (insertError || !participant) {
-      console.error('Insert error:', insertError)
       return NextResponse.json(
         { error: insertError?.message || 'Failed to add participant' },
         { status: 500 }
@@ -69,7 +68,6 @@ export async function POST(
 
     return NextResponse.json({ participant })
   } catch (error: any) {
-    console.error('Add participant error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

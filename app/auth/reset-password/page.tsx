@@ -18,12 +18,10 @@ export default function ResetPasswordPage() {
     // Check if user has a valid session from reset link
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('🔐 Reset password session:', session)
 
       if (session) {
         setValidSession(true)
       } else {
-        console.log('⚠️ No valid session for password reset')
         setMessage({ type: 'error', text: 'Invalid or expired reset link. Please request a new one.' })
       }
     }
@@ -53,10 +51,8 @@ export default function ResetPasswordPage() {
       })
 
       if (error) {
-        console.error('❌ Password reset error:', error)
         setMessage({ type: 'error', text: error.message || 'Failed to reset password' })
       } else {
-        console.log('✅ Password reset successful')
         setMessage({ type: 'success', text: 'Password updated successfully! Redirecting to dashboard...' })
 
         setTimeout(() => {
@@ -64,7 +60,6 @@ export default function ResetPasswordPage() {
         }, 2000)
       }
     } catch (error: any) {
-      console.error('❌ Password reset exception:', error)
       setMessage({ type: 'error', text: 'An error occurred. Please try again.' })
     } finally {
       setLoading(false)

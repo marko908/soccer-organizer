@@ -17,8 +17,6 @@ export async function GET(request: NextRequest) {
 
     const organizerId = session.user.id
 
-    console.log('Fetching events for organizer:', organizerId)
-
     // Get events for this organizer using Supabase client
     const { data: eventsData, error: eventsError } = await supabase
       .from('events')
@@ -27,7 +25,6 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
 
     if (eventsError) {
-      console.error('Error fetching events:', eventsError)
       throw eventsError
     }
 
@@ -62,11 +59,8 @@ export async function GET(request: NextRequest) {
       })
     )
 
-    console.log('Events found:', eventsWithParticipants.length)
-
     return NextResponse.json({ events: eventsWithParticipants })
   } catch (error: any) {
-    console.error('Get events error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
@@ -104,8 +98,6 @@ export async function POST(request: NextRequest) {
     // Calculate price per player
     const pricePerPlayer = totalCost / maxPlayers
 
-    console.log('Creating event for organizer:', organizerId)
-
     // Insert event using Supabase client
     const { data: event, error: insertError } = await supabase
       .from('events')
@@ -128,7 +120,6 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (insertError) {
-      console.error('Error creating event:', insertError)
       throw insertError
     }
 
@@ -151,11 +142,8 @@ export async function POST(request: NextRequest) {
       updatedAt: event.updated_at
     }
 
-    console.log('Event created:', formattedEvent.id)
-
     return NextResponse.json({ event: formattedEvent })
   } catch (error: any) {
-    console.error('Create event error:', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
